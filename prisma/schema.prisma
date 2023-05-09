@@ -1,0 +1,67 @@
+// schema.prisma
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["jsonProtocol"]
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl         = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING") // used for migrations
+}
+
+model Bid {
+  id        BigInt   @id @default(autoincrement())
+  bidderId  BigInt   @map(name: "user_id")
+  itemId    BigInt   @map(name: "item_id")
+  amount    Int      @db.Integer
+  createdAt DateTime @default(now()) @map(name: "created_at") @db.Timestamptz()
+  bidder    User     @relation(fields: [bidderId], references: [id])
+  item      Item     @relation(fields: [itemId], references: [id])
+
+  @@map(name: "bids")
+}
+
+model Item {
+  id            BigInt   @id @default(autoincrement())
+  sellerId      BigInt   @map(name: "seller_id")
+  name          String   @db.VarChar(255)
+  description   String?  @db.Text
+  startingPrice Int      @map(name: "starting_price") @db.Integer
+  timeWindow    Int      @map(name: "time_window") @db.SmallInt
+  status        String   @default("draft") @db.VarChar(30)
+  publishedAt   DateTime @default(now()) @map(name: "published_at") @db.Timestamptz()
+  createdAt     DateTime @default(now()) @map(name: "created_at") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map(name: "updated_at") @db.Timestamptz()
+  seller        User     @relation(fields: [sellerId], references: [id])
+  bids          Bid[]
+
+  @@map(name: "items")
+}
+
+model Transaction {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map(name: "user_id")
+  type      String   @db.VarChar(30)
+  amount    Int      @db.Integer
+  createdAt DateTime @default(now()) @map(name: "created_at") @db.Timestamptz()
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map(name: "transactions")
+}
+
+model User {
+  id           BigInt        @id @default(autoincrement())
+  name         String        @db.VarChar(255)
+  email        String        @unique @db.VarChar(255)
+  password     String        @db.VarChar(255)
+  createdAt    DateTime      @default(now()) @map(name: "created_at") @db.Timestamptz()
+  updatedAt    DateTime      @updatedAt @map(name: "updated_at") @db.Timestamptz()
+  items        Item[]
+  transactions Transaction[]
+  bids         Bid[]
+
+  @@map(name: "users")
+}
