@@ -10,7 +10,10 @@
     "prisma": "dotenv -e .env.development.local -- npx prisma"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.14",
+    "@heroicons/react": "^2.0.18",
     "@prisma/client": "^4.14.0",
+    "@tailwindcss/forms": "^0.5.3",
     "@types/node": "20.1.1",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
