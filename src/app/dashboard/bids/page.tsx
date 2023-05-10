@@ -1,7 +1,7 @@
 export default function Page() {
   return (
     <div className="flex h-screen items-center justify-center">
-      <h1 className="text-white text-3xl font-medium">Welcome page</h1>
+      <h1 className="text-white text-3xl font-medium">Bid listing page</h1>
     </div>
   );
 }

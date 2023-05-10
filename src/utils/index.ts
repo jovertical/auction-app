@@ -5,3 +5,14 @@ export const cx = (...args: unknown[]) => {
     .join(' ')
     .trim();
 };
+
+export const rescue = <T>(
+  fn: () => T,
+  fallback?: T
+): Promise<T> | T | undefined => {
+  try {
+    return Promise.resolve(fn());
+  } catch {
+    return Promise.resolve(fallback as T);
+  }
+};
