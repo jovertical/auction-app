@@ -14,6 +14,7 @@ import { SessionProvider } from 'next-auth/react';
 import { Fragment, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
+import Logo from '@/components/logo';
 import UserAvatar from '@/components/user-avatar';
 import { cx } from '@/utils';
 
@@ -167,14 +168,9 @@ export default function Layout({ children }: PropsWithChildren) {
           {/* Sidebar component, swap this element with another sidebar if you like */}
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-black/10 px-6 ring-1 ring-white/5">
             <div className="flex h-16 shrink-0 items-center">
-              {/* <Image
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Your Company"
-                width={32}
-                height={32}
-              /> */}
+              <Logo className="h-8 w-auto" />
             </div>
+
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
