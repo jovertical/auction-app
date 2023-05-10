@@ -1,9 +1,36 @@
-import Link from 'next/link';
+'use client';
 
-import Form from '@/components/auth/register/form';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+
+import Button from '@/components/button';
+import * as Form from '@/components/form';
 import Logo from '@/components/logo';
+import * as api from '@/utils/api';
+
+type FormValues = {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+};
 
 export default async function Page() {
+  const { register, handleSubmit } = useForm<FormValues>({
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      password_confirmation: '',
+    },
+  });
+
+  const onSubmit = async (values: FormValues) => {
+    const data = await api.post('/auth/registered-user', values);
+
+    console.log(data);
+  };
+
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -15,7 +42,54 @@ export default async function Page() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <Form />
+        <form
+          className="space-y-6"
+          method="POST"
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <Form.Group name="name" label="Name">
+            <Form.TextInput
+              id="name"
+              {...register('name')}
+              type="text"
+              required
+            />
+          </Form.Group>
+
+          <Form.Group name="email" label="Email address">
+            <Form.TextInput
+              id="email"
+              {...register('email')}
+              type="email"
+              autoComplete="email"
+              required
+            />
+          </Form.Group>
+
+          <Form.Group name="password" label="Password">
+            <Form.TextInput
+              id="password"
+              {...register('password')}
+              type="password"
+              autoComplete="current-password"
+              required
+            />
+          </Form.Group>
+
+          <Form.Group name="password_confirmation" label="Repeat Password">
+            <Form.TextInput
+              id="password_confirmation"
+              {...register('password_confirmation')}
+              type="password"
+              autoComplete="current-password"
+              required
+            />
+          </Form.Group>
+
+          <div>
+            <Button type="submit">Sign up</Button>
+          </div>
+        </form>
 
         <p className="mt-10 text-center text-sm text-gray-400">
           Already a member?{' '}
