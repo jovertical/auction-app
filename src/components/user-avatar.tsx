@@ -3,11 +3,9 @@
 import { useSession } from 'next-auth/react';
 import * as React from 'react';
 
-interface Props {
-  //
-}
+import withSessionProvider from '@/components/withSessionProvider';
 
-export default function UserAvatar(props: Props) {
+function UserAvatar() {
   const { data } = useSession();
 
   const initials = React.useMemo(() => {
@@ -40,3 +38,5 @@ export default function UserAvatar(props: Props) {
     </a>
   );
 }
+
+export default withSessionProvider(UserAvatar);
