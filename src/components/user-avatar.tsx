@@ -17,6 +17,8 @@ export default function UserAvatar(props: Props) {
 
     const [first, last] = (data.user?.name ?? '').split(' ');
 
+    if (!last) return first?.[0] + first?.[1];
+
     return `${first[0]}${last[0]}`;
   }, [data?.user]);
 

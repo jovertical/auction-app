@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import Alert from '@/components/alert';
@@ -18,12 +18,14 @@ type FormValues = {
 };
 
 export default function Page() {
+  const params = useSearchParams();
+
   const router = useRouter();
 
-  const { register, handleSubmit } = useForm<FormValues>({
+  const { formState, setValue, register, handleSubmit } = useForm<FormValues>({
     defaultValues: {
-      email: 'john@example.com',
-      password: 'password',
+      email: '',
+      password: '',
     },
   });
 
@@ -46,6 +48,10 @@ export default function Page() {
     });
   }, [error]);
 
+  const fromRegistration = useMemo(() => {
+    return params.get('newUser') === '1' && params.get('email');
+  }, [params]);
+
   const onSubmit = async (values: FormValues) => {
     const response = await signIn('credentials', {
       email: values.email,
@@ -62,10 +68,20 @@ export default function Page() {
       return;
     }
 
+    setError(null);
+
     if (response.url) {
       router.push(response.url);
     }
   };
+
+  useEffect(() => {
+    if (fromRegistration) {
+      setValue('email', params.get('email') ?? '');
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromRegistration, params]);
 
   return (
     <>
@@ -78,7 +94,18 @@ export default function Page() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        {formattedError && <Alert className="mb-4" {...formattedError} />}
+        {formattedError && (
+          <Alert state="error" className="mb-4" {...formattedError} />
+        )}
+
+        {fromRegistration && (
+          <Alert
+            state="success"
+            className="mb-4"
+            title="Registration successful"
+            message="You can now sign in with your new account."
+          />
+        )}
 
         <form
           className="space-y-6"
@@ -91,7 +118,6 @@ export default function Page() {
               register={register}
               type="email"
               autoComplete="email"
-              required
             />
           </Form.Group>
 
@@ -114,12 +140,13 @@ export default function Page() {
               register={register}
               type="password"
               autoComplete="current-password"
-              required
             />
           </Form.Group>
 
           <div>
-            <Button type="submit">Sign in</Button>
+            <Button type="submit" loading={formState.isSubmitting}>
+              {formState.isSubmitting ? 'Signing in...' : 'Sign in'}
+            </Button>
           </div>
         </form>
 

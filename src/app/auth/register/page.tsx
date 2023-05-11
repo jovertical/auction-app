@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 
 import Button from '@/components/button';
@@ -15,25 +17,44 @@ type FormValues = {
   password_confirmation: string;
 };
 
-export default async function Page() {
-  const { register, handleSubmit } = useForm<FormValues>({
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-      password_confirmation: '',
-    },
-  });
+export default function Page() {
+  const router = useRouter();
+
+  const { formState, register, handleSubmit, setError, reset } =
+    useForm<FormValues>({
+      defaultValues: {
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+      },
+    });
 
   const onSubmit = async (values: FormValues) => {
-    const data = await api.post('/auth/registered-user', values);
+    const response = await api.post<{ user: { id: number } }>(
+      '/auth/registered-user',
+      values
+    );
 
-    console.log(data);
+    if (!response.ok) {
+      Object.entries(response.error?.errors ?? {}).forEach(([key, value]) => {
+        setError(key as keyof FormValues, {
+          type: 'manual',
+          message: (value as string[])?.[0] ?? `${key} is invalid}`,
+        });
+      });
+
+      return;
+    }
+
+    reset();
+
+    router.push(`/auth/login?newUser=1&email=${values.email}`);
   };
 
   return (
     <>
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Logo className="h-16 w-auto mx-auto" />
 
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
@@ -47,47 +68,53 @@ export default async function Page() {
           method="POST"
           onSubmit={handleSubmit(onSubmit)}
         >
-          <Form.Group name="name" label="Name">
-            <Form.TextInput
-              name="name"
-              register={register}
-              type="text"
-              required
-            />
+          <Form.Group name="name" label="Name" error={formState.errors.name}>
+            <Form.TextInput name="name" register={register} type="text" />
           </Form.Group>
 
-          <Form.Group name="email" label="Email address">
+          <Form.Group
+            name="email"
+            label="Email address"
+            error={formState.errors.email}
+          >
             <Form.TextInput
               name="email"
               register={register}
               type="email"
               autoComplete="email"
-              required
             />
           </Form.Group>
 
-          <Form.Group name="password" label="Password">
+          <Form.Group
+            name="password"
+            label="Password"
+            error={formState.errors.password}
+          >
             <Form.TextInput
               name="password"
               register={register}
               type="password"
               autoComplete="current-password"
-              required
             />
           </Form.Group>
 
-          <Form.Group name="password_confirmation" label="Repeat Password">
+          <Form.Group
+            name="password_confirmation"
+            label="Repeat Password"
+            error={formState.errors.password_confirmation}
+          >
             <Form.TextInput
               name="password_confirmation"
               register={register}
               type="password"
               autoComplete="current-password"
-              required
             />
           </Form.Group>
 
           <div>
-            <Button type="submit">Sign up</Button>
+            <Button type="submit" loading={formState.isSubmitting}>
+              {formState.isSubmitting ? 'Creating account...' : 'Sign up'}
+            </Button>
           </div>
         </form>
 

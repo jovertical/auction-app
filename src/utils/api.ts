@@ -1,4 +1,6 @@
-const send = async (path: string, options: RequestInit) => {
+type ErrorPayload = { message: string; [key: string]: any };
+
+const send = async <Body>(path: string, options: RequestInit) => {
   try {
     const response = await fetch(`/api/${path}`, {
       ...options,
@@ -9,37 +11,55 @@ const send = async (path: string, options: RequestInit) => {
       },
     });
 
-    if (!response.ok) {
-      throw new Error('Something went wrong.');
-    }
-
     const data = await response.json();
 
-    return data;
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: data as ErrorPayload,
+      };
+    }
+
+    return {
+      ok: true,
+      data: data as Body,
+    };
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error.message);
+      return {
+        ok: false,
+        error: {
+          message: error.message,
+        },
+      };
     }
+
+    return {
+      ok: false,
+      error: {
+        message: 'An unknown error occurred.',
+      },
+    };
   }
 };
 
-export const get = <T>(
+export const get = <Body>(
   path: string,
   query: Record<string, any> = {},
   options: Omit<RequestInit, 'method'> = {}
 ) => {
-  return send(path + '?' + new URLSearchParams(query), {
+  return send<Body>(path + '?' + new URLSearchParams(query), {
     method: 'GET',
     ...options,
   });
 };
 
-export const post = (
+export const post = <Body>(
   path: string,
   data: Record<string, any>,
   options: Omit<RequestInit, 'method' | 'body'> = {}
 ) => {
-  return send(path, {
+  return send<Body>(path, {
     method: 'POST',
     body: JSON.stringify(data),
     ...options,
