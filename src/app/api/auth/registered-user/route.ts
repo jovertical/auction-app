@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/utils/db';
 import { createHash } from '@/utils/hashing';
 import { validate } from '@/utils/validation';
-import { encode } from 'next-auth/jwt';
 
 export async function POST(request: NextRequest) {
   const data = await request.json();
