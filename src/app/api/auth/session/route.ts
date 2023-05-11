@@ -8,7 +8,9 @@ import * as http from '@/utils/http';
 import { validate } from '@/utils/validation';
 
 export async function GET(request: NextRequest) {
-  const token = request.cookies.get('next-auth.session-token');
+  const cookiePrefix = process.env.NODE_ENV === 'production' ? '__Secure-' : '';
+
+  const token = request.cookies.get(cookiePrefix + 'next-auth.session-token');
 
   if (!token) return http.unauthorized();
 
