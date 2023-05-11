@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from 'react';
 
+import ActivityFeed from '@/components/dashboard/activity-feed';
 import MobileNavigation from '@/components/dashboard/mobile-navigation';
 import Navigation from '@/components/dashboard/navigation';
-import ActivityFeed from '@/components/dashboard/activity-feed';
 import SearchBar from '@/components/dashboard/search-bar';
 
 export default function Layout({ children }: PropsWithChildren) {
