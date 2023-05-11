@@ -1,14 +1,14 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import * as React from 'react';
+import { useMemo } from 'react';
 
 import withSessionProvider from '@/components/withSessionProvider';
 
 function UserAvatar() {
   const { data } = useSession();
 
-  const initials = React.useMemo(() => {
+  const initials = useMemo(() => {
     if (!data?.user) {
       return null;
     }

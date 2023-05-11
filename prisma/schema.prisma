@@ -45,17 +45,17 @@ model Bid {
 }
 
 model Item {
-  id            BigInt   @id @default(autoincrement())
-  sellerId      BigInt   @map(name: "seller_id")
-  name          String   @db.VarChar(255)
-  description   String?  @db.Text
-  startingPrice Int      @map(name: "starting_price") @db.Integer
-  timeWindow    Int      @map(name: "time_window") @db.SmallInt
-  status        String   @default("draft") @db.VarChar(30)
-  publishedAt   DateTime @default(now()) @map(name: "published_at") @db.Timestamptz()
-  createdAt     DateTime @default(now()) @map(name: "created_at") @db.Timestamptz()
-  updatedAt     DateTime @updatedAt @map(name: "updated_at") @db.Timestamptz()
-  seller        User     @relation(fields: [sellerId], references: [id])
+  id            BigInt    @id @default(autoincrement())
+  sellerId      BigInt    @map(name: "seller_id")
+  name          String    @db.VarChar(255)
+  description   String?   @db.Text
+  startingPrice Int       @map(name: "starting_price") @db.Integer
+  timeWindow    Int       @map(name: "time_window") @db.SmallInt
+  status        String    @default("draft") @db.VarChar(30)
+  publishedAt   DateTime? @map(name: "published_at") @db.Timestamptz()
+  createdAt     DateTime  @default(now()) @map(name: "created_at") @db.Timestamptz()
+  updatedAt     DateTime  @updatedAt @map(name: "updated_at") @db.Timestamptz()
+  seller        User      @relation(fields: [sellerId], references: [id])
   bids          Bid[]
 
   @@map(name: "items")
