@@ -9,5 +9,5 @@ export const validate = <
 ) => {
   const schema = z.object(callback(z));
 
-  return schema.parse(data);
+  return schema.safeParse(data);
 };

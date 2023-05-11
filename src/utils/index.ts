@@ -6,13 +6,21 @@ export const cx = (...args: unknown[]) => {
     .trim();
 };
 
-export const rescue = <T>(
+export const rescueAsync = <T>(
   fn: () => T,
   fallback?: T
-): Promise<T> | T | undefined => {
+): Promise<T> | undefined => {
   try {
     return Promise.resolve(fn());
   } catch {
     return Promise.resolve(fallback as T);
+  }
+};
+
+export const rescue = <T>(fn: () => T, fallback?: T): T | undefined => {
+  try {
+    return fn();
+  } catch {
+    return fallback;
   }
 };

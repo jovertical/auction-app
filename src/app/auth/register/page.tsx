@@ -32,7 +32,7 @@ export default async function Page() {
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+    <>
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <Logo className="h-16 w-auto mx-auto" />
 
@@ -49,8 +49,8 @@ export default async function Page() {
         >
           <Form.Group name="name" label="Name">
             <Form.TextInput
-              id="name"
-              {...register('name')}
+              name="name"
+              register={register}
               type="text"
               required
             />
@@ -58,8 +58,8 @@ export default async function Page() {
 
           <Form.Group name="email" label="Email address">
             <Form.TextInput
-              id="email"
-              {...register('email')}
+              name="email"
+              register={register}
               type="email"
               autoComplete="email"
               required
@@ -68,8 +68,8 @@ export default async function Page() {
 
           <Form.Group name="password" label="Password">
             <Form.TextInput
-              id="password"
-              {...register('password')}
+              name="password"
+              register={register}
               type="password"
               autoComplete="current-password"
               required
@@ -78,8 +78,8 @@ export default async function Page() {
 
           <Form.Group name="password_confirmation" label="Repeat Password">
             <Form.TextInput
-              id="password_confirmation"
-              {...register('password_confirmation')}
+              name="password_confirmation"
+              register={register}
               type="password"
               autoComplete="current-password"
               required
@@ -94,13 +94,13 @@ export default async function Page() {
         <p className="mt-10 text-center text-sm text-gray-400">
           Already a member?{' '}
           <Link
-            href="/login"
+            href="/auth/login"
             className="font-semibold leading-6 text-indigo-400 hover:text-indigo-300"
           >
             Sign in
           </Link>
         </p>
       </div>
-    </div>
+    </>
   );
 }

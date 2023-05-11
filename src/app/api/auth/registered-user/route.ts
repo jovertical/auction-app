@@ -14,11 +14,21 @@ export async function POST(request: NextRequest) {
     password_confirmation: validator.string(),
   }));
 
+  if (!input.success) {
+    return NextResponse.json(
+      {
+        message: 'Invalid data provided.',
+        errors: input.error.formErrors.fieldErrors,
+      },
+      { status: 422 }
+    );
+  }
+
   const user = await db.user.create({
     data: {
-      name: input.name,
-      email: input.email,
-      password: createHash(input.password),
+      name: input.data.name,
+      email: input.data.email,
+      password: createHash(input.data.password),
     },
   });
 

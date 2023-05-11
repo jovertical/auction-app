@@ -6,7 +6,3 @@ export const unauthorized = () => {
     { status: 401 }
   );
 };
-
-export const data = (data: any) => {
-  return NextResponse.json(data);
-};
