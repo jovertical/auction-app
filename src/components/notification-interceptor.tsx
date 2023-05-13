@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 
 import Notification from '@/components/notification';
+import type { Notification as NotificationPayload } from '@/event/data/notification';
 import { appChannel } from '@/event/channels/app.channel';
 
 export default function NotificationInterceptor() {
-  const [notification, setNotification] = useState<{
-    title: string;
-    message: string;
-  } | null>(null);
+  const [notification, setNotification] = useState<NotificationPayload | null>(
+    null
+  );
 
   useEffect(() => {
     const removeNotificationDisplayedListener = appChannel.on(
@@ -35,8 +35,8 @@ export default function NotificationInterceptor() {
   return (
     <Notification
       show={!!notification}
-      {...notification}
-      onDismiss={() => appChannel.emit('notification::hidden')}
+      {...(notification ?? { title: '', message: '' })}
+      onDismiss={() => setNotification(null)}
     />
   );
 }

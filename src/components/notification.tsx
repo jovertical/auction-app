@@ -2,38 +2,55 @@
 
 import { Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/20/solid';
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
-import { Fragment, useState, useEffect } from 'react';
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/outline';
+import { Fragment, useEffect, useMemo } from 'react';
+
+import type { Notification as NotificationPayload } from '@/event/data/notification';
+import { cx } from '@/utils';
+
+type Props = {
+  show: boolean;
+  onDismiss?: () => void;
+} & NotificationPayload;
+
+const icons = {
+  info: InformationCircleIcon,
+  success: CheckCircleIcon,
+  warning: ExclamationTriangleIcon,
+  error: XCircleIcon,
+};
+
+const iconColors = {
+  info: 'text-blue-400',
+  success: 'text-green-400',
+  warning: 'text-yellow-400',
+  error: 'text-red-400',
+};
 
 export default function Notification({
   title,
   message,
-  show: forceShow = false,
+  state = 'info',
+  show = false,
   onDismiss,
-}: {
-  title?: string;
-  message?: string;
-  show?: boolean;
-  onDismiss?: () => void;
-}) {
-  const [show, setShow] = useState(forceShow);
+}: Props) {
+  const Icon = useMemo(() => icons[state], [state]);
 
   useEffect(() => {
-    setShow(forceShow);
-  }, [forceShow]);
+    if (!show) return;
 
-  useEffect(() => {
-    if (show) {
-      const timeout = setTimeout(() => {
-        setShow(false);
+    const timeout = setTimeout(() => {
+      onDismiss?.();
+    }, 3000);
 
-        onDismiss?.();
-      }, 3000);
-
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [show, onDismiss]);
 
   return (
@@ -55,32 +72,26 @@ export default function Notification({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+            <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-gray-800 shadow-lg ring-1 ring-gray-100 ring-opacity-5">
               <div className="p-4">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <CheckCircleIcon
-                      className="h-6 w-6 text-green-400"
+                    <Icon
+                      className={cx('h-6 w-6', iconColors[state])}
                       aria-hidden="true"
                     />
                   </div>
 
                   <div className="ml-3 w-0 flex-1 pt-0.5">
-                    <p className="text-sm font-medium text-gray-900">{title}</p>
-                    <p className="mt-1 text-sm text-gray-500">{message}</p>
+                    <p className="text-sm font-medium text-white">{title}</p>
+                    <p className="mt-1 text-sm text-gray-300">{message}</p>
                   </div>
 
                   <div className="ml-4 flex flex-shrink-0">
                     <button
                       type="button"
-                      className="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                      onClick={() => {
-                        setShow(false);
-
-                        if (onDismiss) {
-                          onDismiss();
-                        }
-                      }}
+                      className="inline-flex rounded-md bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      onClick={onDismiss}
                     >
                       <span className="sr-only">Close</span>
                       <XMarkIcon className="h-5 w-5" aria-hidden="true" />
