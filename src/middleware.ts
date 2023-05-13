@@ -11,4 +11,8 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/api/user')) {
     return apiAuthMiddleware(request);
   }
+
+  if (request.nextUrl.pathname.startsWith('/api/live')) {
+    return apiAuthMiddleware(request);
+  }
 }

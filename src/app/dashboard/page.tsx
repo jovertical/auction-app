@@ -1,11 +1,7 @@
-import ListHeader from '@/components/dashboard/home/list-header';
-import List from '@/components/dashboard/home/list';
-
 export default function Page() {
   return (
-    <>
-      <ListHeader />
-      <List />
-    </>
+    <div className="flex h-screen items-center justify-center">
+      <h1 className="text-white text-3xl font-medium">Dashboard</h1>
+    </div>
   );
 }

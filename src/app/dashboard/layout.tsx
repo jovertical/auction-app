@@ -6,7 +6,7 @@ import Navigation from '@/components/dashboard/navigation';
 import SearchBar from '@/components/dashboard/search-bar';
 import NotificationInterceptor from '@/components/notification-interceptor';
 
-export default function Layout({ children }: PropsWithChildren) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div>
       <MobileNavigation />
