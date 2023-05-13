@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 
 import Button from '@/components/button';
@@ -112,7 +111,11 @@ export default function Page() {
           </Form.Group>
 
           <div>
-            <Button type="submit" loading={formState.isSubmitting}>
+            <Button
+              className="w-full"
+              type="submit"
+              loading={formState.isSubmitting}
+            >
               {formState.isSubmitting ? 'Creating account...' : 'Sign up'}
             </Button>
           </div>

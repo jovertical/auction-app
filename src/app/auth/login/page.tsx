@@ -49,7 +49,7 @@ export default function Page() {
   }, [error]);
 
   const fromRegistration = useMemo(() => {
-    return params.get('newUser') === '1' && params.get('email');
+    return params?.get('newUser') === '1' && params.get('email');
   }, [params]);
 
   const onSubmit = async (values: FormValues) => {
@@ -77,7 +77,7 @@ export default function Page() {
 
   useEffect(() => {
     if (fromRegistration) {
-      setValue('email', params.get('email') ?? '');
+      setValue('email', params?.get('email') ?? '');
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,7 +144,11 @@ export default function Page() {
           </Form.Group>
 
           <div>
-            <Button type="submit" loading={formState.isSubmitting}>
+            <Button
+              className="w-full"
+              type="submit"
+              loading={formState.isSubmitting}
+            >
               {formState.isSubmitting ? 'Signing in...' : 'Sign in'}
             </Button>
           </div>

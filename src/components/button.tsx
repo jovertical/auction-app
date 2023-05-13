@@ -1,10 +1,18 @@
 import { cx } from '@/utils';
 
 interface Props extends React.ComponentPropsWithoutRef<'button'> {
+  color?: 'primary' | 'secondary';
   loading?: boolean;
 }
 
+const colors = {
+  primary: 'bg-indigo-500 hover:bg-indigo-400 focus-visible:outline-indigo-500',
+  secondary:
+    'bg-gray-100/10 hover:bg-gray-100/20 focus-visible:outline-gray-50',
+};
+
 export default function Button({
+  type = 'button',
   loading = false,
   className,
   children,
@@ -13,8 +21,10 @@ export default function Button({
   return (
     <button
       {...props}
+      type={type}
       className={cx(
-        'flex w-full items-center justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500',
+        'flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50',
+        colors[props.color ?? 'primary'],
         className
       )}
     >
