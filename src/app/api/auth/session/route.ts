@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { decode } from 'next-auth/jwt';
 
 import { rescueAsync } from '@/utils';
@@ -36,9 +36,9 @@ export async function GET(request: NextRequest) {
 
   if (!user) return http.unauthorized();
 
-  return NextResponse.json({
+  return http.json({
     user: {
-      id: parseInt(user.id.toString()), // Prisma fails to serialize `BigInt` types
+      id: user.id,
       name: user.name,
       email: user.email,
       created_at: user.createdAt,
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   }));
 
   if (!input.success) {
-    return NextResponse.json(
+    return http.json(
       {
         message: 'Invalid data provided.',
         errors: input.error.formErrors.fieldErrors,
@@ -79,7 +79,5 @@ export async function POST(request: NextRequest) {
     return http.unauthorized();
   }
 
-  return NextResponse.json({
-    id: parseInt(user.id.toString()), // Prisma fails to serialize `BigInt` types
-  });
+  return http.json({ id: user.id });
 }

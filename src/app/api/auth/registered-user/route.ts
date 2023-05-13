@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 import { db } from '@/utils/db';
 import { createHash } from '@/utils/hashing';
+import * as http from '@/utils/http';
 import { validate } from '@/utils/validation';
 
 export async function POST(request: NextRequest) {
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
   }));
 
   if (!input.success) {
-    return NextResponse.json(
+    return http.json(
       {
         message: 'Invalid data provided.',
         errors: input.error.formErrors.fieldErrors,
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
   })) > 0;
 
   if (emailExists) {
-    return NextResponse.json(
+    return http.json(
       {
         message: 'Unable to create user.',
         errors: {
@@ -62,9 +63,9 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  return NextResponse.json({
+  return http.json({
     user: {
-      id: parseInt(user.id.toString()), // Prisma fails to serialize `BigInt` types
+      id: user.id,
       name: user.name,
       email: user.email,
       created_at: user.createdAt,
