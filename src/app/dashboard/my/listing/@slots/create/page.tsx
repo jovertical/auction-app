@@ -60,7 +60,11 @@ export default function Page() {
   const cancelButtonRef = useRef(null);
 
   const onSubmit = async (values: FormValues) => {
-    const response = await api.post('/items', values);
+    const response = await api.post('/user/items', values, {
+      headers: {
+        // Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
 
     if (!response.ok) {
       Object.entries(response.error?.errors ?? {}).forEach(([key, value]) => {
@@ -79,6 +83,8 @@ export default function Page() {
     });
 
     close();
+
+    router.refresh();
   };
 
   const close = () => {
@@ -102,7 +108,7 @@ export default function Page() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 z-0 bg-gray-900/90  transition-opacity" />
+          <div className="fixed inset-0 z-0 bg-white/10  transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
