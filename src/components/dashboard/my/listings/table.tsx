@@ -56,14 +56,14 @@ export default function ListingsTable({ items }: Props) {
 
           <th
             scope="col"
-            className="hidden py-2 pl-0 pr-4 text-right font-semibold sm:table-cell sm:pr-6 lg:pr-8"
+            className="hidden py-2 pl-0 pr-4 font-semibold sm:table-cell sm:pr-6 lg:pr-8"
           >
             Published
           </th>
 
           <th
             scope="col"
-            className="hidden py-2 pl-0 pr-4 text-right font-semibold sm:table-cell sm:pr-6 lg:pr-8"
+            className="hidden py-2 pl-0 pr-4 font-semibold sm:table-cell sm:pr-6 lg:pr-8"
           >
             Created
           </th>
@@ -124,7 +124,7 @@ export default function ListingsTable({ items }: Props) {
               {item.timeWindow + ' hours'}
             </td>
 
-            <td className="hidden py-4 pl-0 pr-4 text-right text-sm leading-6 text-gray-400 sm:table-cell sm:pr-6 lg:pr-8">
+            <td className="hidden py-4 pl-0 text-sm leading-6 text-gray-400 sm:table-cell">
               {item.publishedAt && (
                 <time dateTime={item.publishedAt.toString()}>
                   {date(item.publishedAt).fromNow()}
