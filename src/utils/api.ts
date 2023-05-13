@@ -56,7 +56,7 @@ export const get = <Body>(
 
 export const post = <Body>(
   path: string,
-  data: Record<string, any>,
+  data?: Record<string, any>,
   options: Omit<RequestInit, 'method' | 'body'> = {}
 ) => {
   return send<Body>(path, {

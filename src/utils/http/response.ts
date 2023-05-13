@@ -6,11 +6,12 @@ BigInt.prototype.toJSON = function (): number {
   return Number(this);
 };
 
-export const unauthorized = () => {
-  return NextResponse.json(
-    { message: 'Unauthorized.', code: 401 },
-    { status: 401 }
-  );
+export const unauthorized = (message = 'Unauthorized.') => {
+  return NextResponse.json({ message, code: 401 }, { status: 401 });
+};
+
+export const forbidden = (message = 'Forbidden.') => {
+  return NextResponse.json({ message, code: 403 }, { status: 403 });
 };
 
 export const notFound = () => {
