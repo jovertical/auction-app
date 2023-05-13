@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 
 import { db } from '@/utils/db';
 import { createHash } from '@/utils/hashing';
-import * as http from '@/utils/http';
+import * as response from '@/utils/http/response';
 import { validate } from '@/utils/validation';
 
 export async function POST(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   }));
 
   if (!input.success) {
-    return http.json(
+    return response.json(
       {
         message: 'Invalid data provided.',
         errors: input.error.formErrors.fieldErrors,
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   })) > 0;
 
   if (emailExists) {
-    return http.json(
+    return response.json(
       {
         message: 'Unable to create user.',
         errors: {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  return http.json({
+  return response.json({
     user: {
       id: user.id,
       name: user.name,

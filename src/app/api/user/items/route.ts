@@ -2,13 +2,15 @@ import { NextRequest } from 'next/server';
 
 import { getUser } from '@/utils/auth';
 import { db } from '@/utils/db';
-import * as http from '@/utils/http';
+import * as response from '@/utils/http/response';
 import { validate } from '@/utils/validation';
 
 export async function POST(request: NextRequest) {
+  console.log('POST > request :: ', request);
+
   const user = await getUser();
 
-  if (!user) return http.unauthorized();
+  if (!user) return response.unauthorized();
 
   const data = await request.json();
 
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
   }));
 
   if (!input.success) {
-    return http.json(
+    return response.json(
       {
         message: 'Invalid data provided.',
         errors: input.error.formErrors.fieldErrors,
@@ -57,5 +59,5 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  return http.json(item, { status: 201 });
+  return response.json(item, { status: 201 });
 }

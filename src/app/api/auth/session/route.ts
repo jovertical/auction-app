@@ -4,7 +4,7 @@ import { decode } from 'next-auth/jwt';
 import { rescueAsync } from '@/utils';
 import { db } from '@/utils/db';
 import { compareHash } from '@/utils/hashing';
-import * as http from '@/utils/http';
+import * as response from '@/utils/http/response';
 import { validate } from '@/utils/validation';
 
 export async function GET(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   const token = request.cookies.get(cookiePrefix + 'next-auth.session-token');
 
-  if (!token) return http.unauthorized();
+  if (!token) return response.unauthorized();
 
   const decodedToken = await rescueAsync(() => {
     return decode({
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     });
   }, null);
 
-  if (!decodedToken?.sub) return http.unauthorized();
+  if (!decodedToken?.sub) return response.unauthorized();
 
   const user = await db.user.findUnique({
     where: { id: parseInt(decodedToken.sub) },
@@ -34,9 +34,9 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  if (!user) return http.unauthorized();
+  if (!user) return response.unauthorized();
 
-  return http.json({
+  return response.json({
     user: {
       id: user.id,
       name: user.name,
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   }));
 
   if (!input.success) {
-    return http.json(
+    return response.json(
       {
         message: 'Invalid data provided.',
         errors: input.error.formErrors.fieldErrors,
@@ -76,8 +76,8 @@ export async function POST(request: NextRequest) {
   });
 
   if (!user || !compareHash(user?.password ?? '', input.data.password)) {
-    return http.unauthorized();
+    return response.unauthorized();
   }
 
-  return http.json({ id: user.id });
+  return response.json({ id: user.id });
 }
