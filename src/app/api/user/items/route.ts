@@ -6,8 +6,6 @@ import * as response from '@/utils/http/response';
 import { validate } from '@/utils/validation';
 
 export async function POST(request: NextRequest) {
-  console.log('POST > request :: ', request);
-
   const user = await getUser();
 
   if (!user) return response.unauthorized();

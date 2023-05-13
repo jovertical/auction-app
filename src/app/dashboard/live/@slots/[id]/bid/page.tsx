@@ -4,13 +4,14 @@ import { Dialog, Transition } from '@headlessui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { Item } from '@prisma/client';
 import { useRouter } from 'next/navigation';
-import { Fragment, useRef, use, memo } from 'react';
+import { Fragment, useRef, useState, memo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import Button from '@/components/button';
 import CountdownTimer from '@/components/countdown-timer';
 import * as Form from '@/components/form';
+import { appChannel } from '@/event/channels/app.channel';
 import * as api from '@/utils/api';
 import { date } from '@/utils/date';
 
@@ -18,14 +19,8 @@ type FormValues = {
   bid: number;
 };
 
-async function fetchItemById(id: Item['id']) {
-  const item = await api.get<Item>(`/live/items/${id}`);
-
-  return item.ok ? item.data : null;
-}
-
-function Page({ params }: { params: { id: string } }) {
-  const item = use(fetchItemById(BigInt(params.id)));
+export default function Page({ params }: { params: { id: string } }) {
+  const [item, setItem] = useState<Item | null>(null);
 
   const router = useRouter();
 
@@ -39,7 +34,7 @@ function Page({ params }: { params: { id: string } }) {
     resolver: zodResolver(
       z.object({
         bid: z.preprocess(
-          (timeWindow) => parseInt(timeWindow as string, 10),
+          (bid) => parseInt(bid as string, 10),
           z
             .number({ invalid_type_error: 'Please enter a your bid' })
             .positive('Bids must be at least 1')
@@ -51,6 +46,32 @@ function Page({ params }: { params: { id: string } }) {
   const onSubmit = async (values: FormValues) => {
     if (!item) return;
 
+    const response = await api.post(`/live/items/${item.id}/bid`, values);
+
+    // prettier-ignore
+    appChannel.emit('notification::displayed', {
+      ...response.ok ? {
+        title: 'Bid submitted',
+        message: 'We will notify you if you are outbid or win the auction',
+        state: 'success',
+      } : {
+        title: 'Bid failed',
+        message: response.error?.message ?? 'Please try again later',
+        state: 'error',
+      }
+    });
+
+    if (!response.ok) {
+      Object.entries(response.error?.errors ?? {}).forEach(([key, value]) => {
+        setError(key as keyof FormValues, {
+          type: 'manual',
+          message: (value as string[])?.[0] ?? `${key} is invalid}`,
+        });
+      });
+
+      return;
+    }
+
     close();
 
     router.refresh();
@@ -59,6 +80,22 @@ function Page({ params }: { params: { id: string } }) {
   const close = () => {
     router.back();
   };
+
+  useEffect(() => {
+    async function load() {
+      if (!params.id) return;
+
+      if (item) return;
+
+      const newItem = await api.get<Item>(`/live/items/${params.id}`);
+
+      if (!newItem.data) return;
+
+      setItem(newItem.data);
+    }
+
+    load();
+  }, [params, item]);
 
   if (!item) return null;
 
@@ -127,14 +164,11 @@ function Page({ params }: { params: { id: string } }) {
                     </Form.Group>
                   </div>
 
-                  <div className="flex justify-center py-4 px-6 items-center">
-                    <CountdownTimer
-                      interval={1000}
-                      date={date(item.publishedAt)
-                        .add(item.timeWindow, 'hours')
-                        .toDate()}
-                    />
-                  </div>
+                  {item.expiresAt && (
+                    <div className="flex justify-center py-4 px-6 items-center">
+                      <CountdownTimer date={date(item.expiresAt).toDate()} />
+                    </div>
+                  )}
 
                   <div className="mt-5 sm:mt-6 bg-gray-800/10 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                     <Button type="submit" className="w-full sm:ml-3 sm:w-auto">
@@ -158,5 +192,3 @@ function Page({ params }: { params: { id: string } }) {
     </Transition.Root>
   );
 }
-
-export default memo(Page);

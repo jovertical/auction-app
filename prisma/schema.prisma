@@ -53,6 +53,7 @@ model Item {
   timeWindow    Int       @map(name: "time_window") @db.SmallInt
   status        String    @default("draft") @db.VarChar(30)
   publishedAt   DateTime? @map(name: "published_at") @db.Timestamptz()
+  expiresAt     DateTime? @map(name: "expires_at") @db.Timestamptz()
   createdAt     DateTime  @default(now()) @map(name: "created_at") @db.Timestamptz()
   updatedAt     DateTime  @updatedAt @map(name: "updated_at") @db.Timestamptz()
   seller        User      @relation(fields: [sellerId], references: [id])

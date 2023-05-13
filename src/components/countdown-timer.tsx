@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function CountdownTimer({
-  interval: timer = 3000,
+  interval: timer = 1000,
   date,
 }: Props) {
   const [countdown, setCountdown] = useState({
@@ -32,7 +32,13 @@ export default function CountdownTimer({
     return diff < 1000 * 60 * 60;
   }, [date]);
 
+  const renderDigit = (value: number) => {
+    return value.toString().padStart(2, '0');
+  };
+
   useEffect(() => {
+    if (expired) return;
+
     const interval = setInterval(() => {
       const now = new Date();
 
@@ -54,7 +60,7 @@ export default function CountdownTimer({
     return () => {
       clearInterval(interval);
     };
-  }, [date, timer]);
+  }, [date, timer, expired]);
 
   if (expired) return null;
 
@@ -71,8 +77,8 @@ export default function CountdownTimer({
               isWithinTheHour ? 'text-red-500' : 'text-gray-200'
             )}
           >
-            {isWithinTheHour ? '' : countdown.hours + ':'}
-            {countdown.minutes}:{countdown.seconds}
+            {isWithinTheHour ? '' : renderDigit(countdown.hours) + ':'}
+            {renderDigit(countdown.minutes)}:{renderDigit(countdown.seconds)}
           </code>
         </>
       )}

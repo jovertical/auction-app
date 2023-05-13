@@ -4,6 +4,14 @@ import { useSession } from 'next-auth/react';
 import { useMemo } from 'react';
 
 import withSessionProvider from '@/components/withSessionProvider';
+import { cx, generateAvatarColor } from '@/utils';
+
+const colors = {
+  gray: 'bg-gray-600',
+  red: 'bg-red-600',
+  teal: 'bg-teal-600',
+  pink: 'bg-pink-600',
+};
 
 function UserAvatar() {
   const { data } = useSession();
@@ -29,7 +37,12 @@ function UserAvatar() {
       href="#"
       className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-gray-800"
     >
-      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-500">
+      <span
+        className={cx(
+          'inline-flex h-10 w-10 items-center justify-center rounded-full',
+          colors[generateAvatarColor(initials ?? '')]
+        )}
+      >
         <span className="font-medium leading-none text-white">{initials}</span>
       </span>
 

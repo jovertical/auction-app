@@ -19,6 +19,7 @@ export async function GET(
       startingPrice: true,
       timeWindow: true,
       publishedAt: true,
+      expiresAt: true,
       createdAt: true,
       updatedAt: true,
     },

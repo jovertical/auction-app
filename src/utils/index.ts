@@ -6,6 +6,18 @@ export const cx = (...args: unknown[]) => {
     .trim();
 };
 
+export const generateAvatarColor = (letter: string) => {
+  if (!letter) return 'gray';
+
+  const charCode = letter.charCodeAt(0);
+
+  if (charCode >= 65 && charCode <= 73) return 'red';
+  if (charCode >= 74 && charCode <= 82) return 'teal';
+  if (charCode >= 83 && charCode <= 90) return 'pink';
+
+  return 'gray';
+};
+
 export const rescueAsync = <T>(
   fn: () => T,
   fallback?: T

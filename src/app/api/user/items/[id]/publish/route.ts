@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 
+import { date } from '@/utils/date';
 import { db } from '@/utils/db';
 import * as response from '@/utils/http/response';
 
@@ -15,6 +16,7 @@ export async function POST(
       id: true,
       sellerId: true,
       status: true,
+      timeWindow: true,
     },
   });
 
@@ -28,10 +30,18 @@ export async function POST(
     return response.forbidden('Only items in draft status can be published.');
   }
 
-  // Set the item's `status` to published and set the `publishedAt` date to `now`.
+  // Set the item's `status` to published
+  // Set the `publishedAt` date to `now`.
+  // Set the `expiresAt` date to `now + timeWindow`.
   const updatedItem = await db.item.update({
     where: { id: parseInt(params.id, 10) },
-    data: { status: 'published', publishedAt: new Date() },
+
+    data: {
+      status: 'published',
+      publishedAt: date().toDate(),
+      expiresAt: date().add(item.timeWindow, 'hours').toDate(),
+    },
+
     select: {
       id: true,
       sellerId: true,
@@ -40,6 +50,7 @@ export async function POST(
       startingPrice: true,
       timeWindow: true,
       publishedAt: true,
+      expiresAt: true,
       createdAt: true,
       updatedAt: true,
     },

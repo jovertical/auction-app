@@ -14,6 +14,13 @@ export const forbidden = (message = 'Forbidden.') => {
   return NextResponse.json({ message, code: 403 }, { status: 403 });
 };
 
+export const inputError = (errors: any) => {
+  return NextResponse.json(
+    { message: 'Invalid data provided.', errors },
+    { status: 422 }
+  );
+};
+
 export const notFound = () => {
   return NextResponse.json(
     { message: 'Not found.', code: 404 },

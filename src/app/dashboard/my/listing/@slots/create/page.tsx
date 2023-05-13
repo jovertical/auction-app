@@ -60,11 +60,7 @@ export default function Page() {
   const cancelButtonRef = useRef(null);
 
   const onSubmit = async (values: FormValues) => {
-    const response = await api.post('/user/items', values, {
-      headers: {
-        // Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
+    const response = await api.post('/user/items', values);
 
     if (!response.ok) {
       Object.entries(response.error?.errors ?? {}).forEach(([key, value]) => {
@@ -80,6 +76,7 @@ export default function Page() {
     appChannel.emit('notification::displayed', {
       title: 'Item created',
       message: `Don't forget to publish your item!`,
+      state: 'success',
     });
 
     close();
