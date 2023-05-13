@@ -4,6 +4,7 @@ import ActivityFeed from '@/components/dashboard/activity-feed';
 import MobileNavigation from '@/components/dashboard/mobile-navigation';
 import Navigation from '@/components/dashboard/navigation';
 import SearchBar from '@/components/dashboard/search-bar';
+import NotificationInterceptor from '@/components/notification-interceptor';
 
 export default function Layout({ children }: PropsWithChildren) {
   return (
@@ -18,6 +19,8 @@ export default function Layout({ children }: PropsWithChildren) {
         <main className="lg:pr-96">{children}</main>
 
         <ActivityFeed />
+
+        <NotificationInterceptor />
       </div>
     </div>
   );
