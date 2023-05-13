@@ -13,8 +13,8 @@ datasource db {
 }
 
 model Account {
-  id                BigInt  @id @default(autoincrement())
-  userId            BigInt  @map(name: "user_id")
+  id                Int     @id @default(autoincrement())
+  userId            Int     @map(name: "user_id")
   type              String
   provider          String
   providerAccountId String  @map(name: "provider_account_id")
@@ -33,9 +33,9 @@ model Account {
 }
 
 model Bid {
-  id        BigInt   @id @default(autoincrement())
-  bidderId  BigInt   @map(name: "user_id")
-  itemId    BigInt   @map(name: "item_id")
+  id        Int      @id @default(autoincrement())
+  bidderId  Int      @map(name: "user_id")
+  itemId    Int      @map(name: "item_id")
   amount    Int      @db.Integer
   createdAt DateTime @default(now()) @map(name: "created_at") @db.Timestamptz()
   bidder    User     @relation(fields: [bidderId], references: [id])
@@ -45,8 +45,8 @@ model Bid {
 }
 
 model Item {
-  id            BigInt    @id @default(autoincrement())
-  sellerId      BigInt    @map(name: "seller_id")
+  id            Int       @id @default(autoincrement())
+  sellerId      Int       @map(name: "seller_id")
   name          String    @db.VarChar(255)
   description   String?   @db.Text
   startingPrice Int       @map(name: "starting_price") @db.Integer
@@ -62,9 +62,9 @@ model Item {
 }
 
 model Session {
-  id           BigInt   @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   sessionToken String   @unique @map(name: "session_token")
-  userId       BigInt   @map(name: "user_id")
+  userId       Int      @map(name: "user_id")
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -72,8 +72,8 @@ model Session {
 }
 
 model Transaction {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt   @map(name: "user_id")
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map(name: "user_id")
   type      String   @db.VarChar(30)
   amount    Int      @db.Integer
   createdAt DateTime @default(now()) @map(name: "created_at") @db.Timestamptz()
@@ -83,7 +83,7 @@ model Transaction {
 }
 
 model User {
-  id           BigInt        @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   name         String?       @db.VarChar(255)
   email        String?       @unique @db.VarChar(255)
   password     String?       @db.VarChar(255)
