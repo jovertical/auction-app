@@ -7,7 +7,12 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "prisma": "dotenv -e .env.development.local -- npx prisma"
+    "prisma": "dotenv -e .env.development.local -- npx prisma",
+    "test:types": "tsc --noEmit",
+    "test:lint": "eslint --max-warnings 0 --ext .js,.jsx.ts,.tsx src",
+    "test:lint:fix": "npm run test:lint -- --fix",
+    "test:unit": "",
+    "test": "npm run test:types && npm run test:lint && npm run test:unit"
   },
   "dependencies": {
     "@ably-labs/react-hooks": "^2.1.1",
