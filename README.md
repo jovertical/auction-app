@@ -20,9 +20,9 @@ npm run dev
 - [x] Item listing and publishing
 - [x] Credit deposit
 - [x] Live Auction with support to multiple bidders
-- [] Item auction closing
-- [] Outbid notifications
-- [] Bid history
+- [ ] Item auction closing
+- [ ] Outbid notifications
+- [ ] Bid history
 
 ## Tech Stack
 
