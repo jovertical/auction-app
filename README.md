@@ -4,9 +4,15 @@ This is an app that allows users to post items for auction and other users to bi
 
 ## 🚀 Quick Start
 
+Run project locally - needs a deployed Next.js app (see [Deployment](#deployment))):
+
 ```bash
 # First, install dependencies
 npm install
+
+# Then, setup prisma
+npm run prisma -- generate
+npm run prisma -- db push # Needs to be run after every change to the `schema.prisma` file
 
 # Then, run the app
 npm run dev
@@ -43,3 +49,28 @@ npm run dev
 ```bash
 npm test
 ```
+
+## Deployment
+
+Since this is a fullstack Next.js app, it can be deployed using the [Vercel CLI](https://vercel.com/docs/cli):
+
+```bash
+# Authenticate with Vercel
+vercel login
+
+# Add project to Vercel
+vercel project add my-project-name
+
+# Link project to Vercel
+vercel link my-project-name
+
+# Setup environment variables
+vercel env add NEXTAUTH_URL production # https://[app-name].vercel.app
+vercel env add NEXTAUTH_SECRET production # [random string]
+vercel env add ABLY_API_KEY production # [Ably API Key] - https://faqs.ably.com/setting-up-and-managing-api-keys
+
+# Deploy
+vercel --prod
+```
+
+[Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) should be configured after deployment.
