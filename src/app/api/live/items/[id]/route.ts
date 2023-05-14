@@ -22,6 +22,29 @@ export async function GET(
       expiresAt: true,
       createdAt: true,
       updatedAt: true,
+
+      seller: {
+        select: {
+          name: true,
+        },
+      },
+
+      bids: {
+        orderBy: {
+          amount: 'desc',
+        },
+
+        select: {
+          amount: true,
+          createdAt: true,
+          bidder: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   });
 

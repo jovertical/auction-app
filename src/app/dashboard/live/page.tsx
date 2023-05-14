@@ -1,60 +1,52 @@
+'use client';
+
+import { SessionContext } from 'next-auth/react';
+import { useContext, useState, useMemo, useEffect } from 'react';
+
 import ButtonLink from '@/components/button-link';
 import CountdownTimer from '@/components/countdown-timer';
 import ListSortMenu from '@/components/dashboard/live/list-sort-menu';
-import { getUser } from '@/utils/auth';
+import * as api from '@/utils/api';
 import { date } from '@/utils/date';
-import { db } from '@/utils/db';
 import { currencyFormat } from '@/utils/number';
 
+type Item = {
+  id: number;
+  name: string;
+  description: string;
+  startingPrice: number;
+  publishedAt: string | null;
+  expiresAt: string | null;
+  seller: { name: string };
+  bids: {
+    amount: number;
+    createdAt: string;
+    bidder: { id: number; name: string };
+  }[];
+};
+
 async function getItems() {
-  const user = await getUser();
+  const items = await api.get<Item[]>('/live/items');
 
-  const items = await db.item.findMany({
-    where: {
-      status: 'published',
-
-      expiresAt: {
-        gt: new Date(),
-      },
-
-      sellerId: {
-        not: user?.id,
-      },
-    },
-
-    include: {
-      seller: {
-        select: {
-          name: true,
-        },
-      },
-
-      bids: {
-        orderBy: {
-          amount: 'desc',
-        },
-
-        select: {
-          amount: true,
-          createdAt: true,
-          bidder: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  return items;
+  return items.error ? [] : items.data;
 }
 
-export default async function Page() {
-  const user = await getUser();
+export default function Page() {
+  const session = useContext(SessionContext);
 
-  const items = await getItems();
+  const [items, setItems] = useState<Item[]>([]);
+
+  const user = useMemo(() => session?.data?.user, [session?.data]);
+
+  useEffect(() => {
+    async function load() {
+      const items = await getItems();
+
+      setItems(items);
+    }
+
+    load();
+  }, []);
 
   return (
     <>
@@ -128,7 +120,9 @@ export default async function Page() {
                           <span className="text-gray-400">/</span>
 
                           <span className="whitespace-nowrap">
-                            <CountdownTimer date={item.expiresAt} />
+                            <CountdownTimer
+                              date={date(item.expiresAt).toDate()}
+                            />
                           </span>
                         </>
                       )}
@@ -146,7 +140,7 @@ export default async function Page() {
                       <p className="whitespace-nowrap">
                         Highest bid by{' '}
                         <strong className="text-white">
-                          {item.bids[0].bidder.id === BigInt(user?.id ?? 0)
+                          {item.bids[0].bidder.id === user?.id ?? 0
                             ? 'You'
                             : item.bids[0].bidder.name}
                         </strong>{' '}

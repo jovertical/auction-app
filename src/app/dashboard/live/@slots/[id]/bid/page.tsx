@@ -2,7 +2,6 @@
 
 import { Dialog, Transition } from '@headlessui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { Item } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { Fragment, useRef, useState, memo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -14,6 +13,21 @@ import * as Form from '@/components/form';
 import { appChannel } from '@/event/channels/app.channel';
 import * as api from '@/utils/api';
 import { date } from '@/utils/date';
+
+type Item = {
+  id: number;
+  name: string;
+  description: string;
+  startingPrice: number;
+  publishedAt: string | null;
+  expiresAt: string | null;
+  seller: { name: string };
+  bids: {
+    amount: number;
+    createdAt: string;
+    bidder: { id: number; name: string };
+  }[];
+};
 
 type FormValues = {
   bid: number;
