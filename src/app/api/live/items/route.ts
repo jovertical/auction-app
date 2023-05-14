@@ -27,16 +27,25 @@ export async function GET() {
 
       bids: {
         orderBy: {
-          amount: 'desc',
+          transaction: {
+            amount: 'desc',
+          },
         },
 
         select: {
-          amount: true,
+          id: true,
           createdAt: true,
+
           bidder: {
             select: {
               id: true,
               name: true,
+            },
+          },
+
+          transaction: {
+            select: {
+              amount: true,
             },
           },
         },

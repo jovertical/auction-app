@@ -23,9 +23,17 @@ type Item = {
   expiresAt: string | null;
   seller: { name: string };
   bids: {
-    amount: number;
+    id: number;
     createdAt: string;
-    bidder: { id: number; name: string };
+
+    bidder: {
+      id: number;
+      name: string;
+    };
+
+    transaction: {
+      amount: number;
+    };
   }[];
 };
 
@@ -185,7 +193,12 @@ export default function Page({ params }: { params: { id: string } }) {
                   )}
 
                   <div className="mt-5 sm:mt-6 bg-gray-800/10 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                    <Button type="submit" className="w-full sm:ml-3 sm:w-auto">
+                    <Button
+                      type="submit"
+                      className="w-full sm:ml-3 sm:w-auto"
+                      disabled={Object.keys(formState.errors).length > 0}
+                      loading={formState.isSubmitting}
+                    >
                       Place Bid
                     </Button>
 

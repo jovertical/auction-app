@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 
+import { getUser } from '@/utils/auth';
 import { date } from '@/utils/date';
 import { db } from '@/utils/db';
 import * as response from '@/utils/http/response';
@@ -10,7 +11,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const userId = request.headers.get('X-User-Id');
+  const user = await getUser();
+
+  if (!user) return response.unauthorized();
 
   const data = await request.json();
 
@@ -35,9 +38,14 @@ export async function POST(
       status: true,
       startingPrice: true,
       expiresAt: true,
+
       bids: {
         select: {
-          amount: true,
+          transaction: {
+            select: {
+              amount: true,
+            },
+          },
         },
       },
     },
@@ -46,7 +54,7 @@ export async function POST(
   if (!item) return response.notFound();
 
   // The seller cannot bid on the item they are selling.
-  if (item.sellerId === BigInt(userId ?? '')) {
+  if (item.sellerId === BigInt(user.id)) {
     return response.forbidden('You cannot bid on your own listing.');
   }
 
@@ -67,20 +75,69 @@ export async function POST(
   // prettier-ignore
   const minimumPrice = item.bids.length === 0
       ? item.startingPrice
-      : item.bids.reduce((highest, bid) => Math.max(highest, bid.amount), 0) + 100;
+      : item.bids.reduce((highest, bid) => Math.max(highest, bid.transaction.amount), 0) + 100;
 
+  // The bid must be at least the minimum price/bid.
   if (minimumPrice > input.data.bid * 100) {
     return response.inputError({
       bid: [`You must bid at least ${currencyFormat(minimumPrice)}`],
     });
   }
 
-  const bid = await db.bid.create({
-    data: {
-      itemId: parseInt(params.id, 10),
-      bidderId: BigInt(userId ?? ''),
-      amount: input.data.bid * 100,
-    },
+  // Ensure that the user has enough balance to make the bid.
+  if (user.balance < input.data.bid * 100) {
+    return response.inputError({
+      bid: ['You do not have enough balance to make this bid.'],
+    });
+  }
+
+  const bid = await db.$transaction(async (tx) => {
+    // Get the user's transaction breakdown.
+    const transactionBreakdown = await db.transaction.groupBy({
+      by: ['type'],
+      where: { userId: user.id },
+      _sum: { amount: true },
+    });
+
+    // Calculate the user's balance by summing all `CREDIT` transactions and
+    // subtracting all `DEBIT` transactions.
+    const balance = transactionBreakdown.reduce((carry, item) => {
+      if (item.type === 'CREDIT') return carry + (item._sum.amount ?? 0);
+
+      return carry - (item._sum.amount ?? 0);
+    }, 0);
+
+    // Before we create the `DEBIT` transaction, we need to ensure that the
+    // user has enough balance to make the bid.
+    if (balance < input.data.bid * 100) {
+      throw new Error('Insufficient balance');
+    }
+
+    // Now that we know the user has enough balance, we can create the `DEBIT`
+    // transaction to deduct the bid amount from the user's balance.
+    const transaction = await tx.transaction.create({
+      data: {
+        userId: user.id,
+        amount: input.data.bid * 100,
+        type: 'DEBIT',
+      },
+    });
+
+    // Finally, we can create the bid.
+    const bid = await tx.bid.create({
+      data: {
+        itemId: parseInt(params.id, 10),
+        bidderId: user.id,
+        transactionId: transaction.id,
+      },
+
+      include: {
+        bidder: true,
+        transaction: true,
+      },
+    });
+
+    return bid;
   });
 
   return response.json(bid);

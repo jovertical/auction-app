@@ -19,9 +19,17 @@ type Item = {
   expiresAt: string | null;
   seller: { name: string };
   bids: {
-    amount: number;
+    id: number;
     createdAt: string;
-    bidder: { id: number; name: string };
+
+    bidder: {
+      id: number;
+      name: string;
+    };
+
+    transaction: {
+      amount: number;
+    };
   }[];
 };
 
@@ -111,7 +119,7 @@ export default function Page() {
                         {currencyFormat(
                           item.bids.length === 0
                             ? item.startingPrice
-                            : item.bids[0].amount
+                            : item.bids[0].transaction.amount
                         )}
                       </span>
 
