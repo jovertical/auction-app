@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/listing-expiry-watcher",
+      "schedule": "*/5 * * * * *"
+    }
+  ]
+}
