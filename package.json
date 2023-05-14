@@ -10,6 +10,7 @@
     "prisma": "dotenv -e .env.development.local -- npx prisma"
   },
   "dependencies": {
+    "@ably-labs/react-hooks": "^2.1.1",
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.1.0",
@@ -20,6 +21,7 @@
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
     "@vercel/postgres": "^0.2.1",
+    "ably": "^1.2.39",
     "autoprefixer": "10.4.14",
     "crypto-js": "^4.1.1",
     "dayjs": "^1.11.7",

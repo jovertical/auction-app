@@ -1,3 +1,4 @@
+import * as Ably from 'ably/promises';
 import { NextRequest } from 'next/server';
 
 import { getUser } from '@/utils/auth';
@@ -6,6 +7,54 @@ import { db } from '@/utils/db';
 import * as response from '@/utils/http/response';
 import { currencyFormat } from '@/utils/number';
 import { validate } from '@/utils/validation';
+
+const findItem = async (id: number) => {
+  const item = await db.item.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      sellerId: true,
+      status: true,
+      startingPrice: true,
+      publishedAt: true,
+      expiresAt: true,
+
+      seller: {
+        select: {
+          name: true,
+        },
+      },
+
+      bids: {
+        orderBy: {
+          transaction: {
+            amount: 'desc',
+          },
+        },
+
+        select: {
+          id: true,
+          createdAt: true,
+
+          bidder: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          transaction: {
+            select: {
+              amount: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return item;
+};
 
 export async function POST(
   request: NextRequest,
@@ -30,26 +79,9 @@ export async function POST(
     return response.inputError(input.error.formErrors.fieldErrors);
   }
 
-  const item = await db.item.findUnique({
-    where: { id: parseInt(params.id, 10) },
-    select: {
-      id: true,
-      sellerId: true,
-      status: true,
-      startingPrice: true,
-      expiresAt: true,
+  const itemId = parseInt(params.id, 10);
 
-      bids: {
-        select: {
-          transaction: {
-            select: {
-              amount: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  const item = await findItem(itemId);
 
   if (!item) return response.notFound();
 
@@ -139,6 +171,22 @@ export async function POST(
 
     return bid;
   });
+
+  // We'll publish the bid to Ably so that we can update the live auction page in real time
+  // Typically, an error must be thrown if the bid cannot be published to Ably.
+  // However, we don't want to prevent the user from bidding if Ably is mis-configured.
+  if (process.env.ABLY_API_KEY) {
+    const client = new Ably.Rest(process.env.ABLY_API_KEY);
+
+    const channel = client.channels.get('live:bid-posted');
+
+    const updatedItem = await findItem(itemId);
+
+    channel.publish('bid-posted', {
+      bid,
+      item: updatedItem,
+    });
+  }
 
   return response.json(bid);
 }

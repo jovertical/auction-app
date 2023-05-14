@@ -1,7 +1,9 @@
 'use client';
 
+import { configureAbly } from '@ably-labs/react-hooks';
+import * as Ably from 'ably/promises';
 import { SessionContext } from 'next-auth/react';
-import { useContext, useState, useMemo, useEffect } from 'react';
+import { useContext, useState, useMemo, useCallback, useEffect } from 'react';
 
 import ButtonLink from '@/components/button-link';
 import CountdownTimer from '@/components/countdown-timer';
@@ -46,14 +48,45 @@ export default function Page() {
 
   const user = useMemo(() => session?.data?.user, [session?.data]);
 
+  const shallowUpdateItems = useCallback(
+    (newItem: Item) => {
+      setItems((prevItems) => {
+        return prevItems.map((item) => {
+          return item.id === newItem.id ? newItem : item;
+        });
+      });
+    },
+    [setItems]
+  );
+
+  const loadItems = useCallback(async () => {
+    const items = await getItems();
+
+    setItems(items);
+  }, []);
+
   useEffect(() => {
-    async function load() {
-      const items = await getItems();
+    loadItems();
 
-      setItems(items);
-    }
+    const ably: Ably.Types.RealtimePromise = configureAbly({
+      authUrl: '/api/socket/authenticate',
+    });
 
-    load();
+    const bidPostedChannel = ably.channels.get('live:bid-posted');
+
+    bidPostedChannel.subscribe((message) => {
+      const updatedItem = message.data?.item;
+
+      if (updatedItem) {
+        shallowUpdateItems(updatedItem);
+      }
+    });
+
+    return () => {
+      bidPostedChannel.unsubscribe();
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
