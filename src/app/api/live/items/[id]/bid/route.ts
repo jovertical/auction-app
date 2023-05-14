@@ -7,6 +7,7 @@ import { db } from '@/utils/db';
 import * as response from '@/utils/http/response';
 import { currencyFormat } from '@/utils/number';
 import { validate } from '@/utils/validation';
+import { UserService } from '@/services/user.service';
 
 const findItem = async (id: number) => {
   const item = await db.item.findUnique({
@@ -63,6 +64,8 @@ export async function POST(
   const user = await getUser();
 
   if (!user) return response.unauthorized();
+
+  const userService = new UserService({ ...user, id: BigInt(user.id) });
 
   const data = await request.json();
 
@@ -124,25 +127,47 @@ export async function POST(
   }
 
   const bid = await db.$transaction(async (tx) => {
-    // Get the user's transaction breakdown.
-    const transactionBreakdown = await db.transaction.groupBy({
-      by: ['type'],
-      where: { userId: user.id },
-      _sum: { amount: true },
-    });
-
-    // Calculate the user's balance by summing all `CREDIT` transactions and
-    // subtracting all `DEBIT` transactions.
-    const balance = transactionBreakdown.reduce((carry, item) => {
-      if (item.type === 'CREDIT') return carry + (item._sum.amount ?? 0);
-
-      return carry - (item._sum.amount ?? 0);
-    }, 0);
+    const balance = await userService.getBalance();
 
     // Before we create the `DEBIT` transaction, we need to ensure that the
     // user has enough balance to make the bid.
     if (balance < input.data.bid * 100) {
       throw new Error('Insufficient balance');
+    }
+
+    // Sum the total amount of bids that the user has made on this item.
+    // Then create a `CREDIT` transaction to refund the user's previous bids.
+    const previousBids = await tx.bid.findMany({
+      where: {
+        bidderId: user.id,
+        itemId: item.id,
+      },
+
+      select: {
+        transaction: {
+          select: {
+            amount: true,
+          },
+        },
+      },
+    });
+
+    // Sum the total amount of the user's previous bids.
+    const previousBidTotal = previousBids.reduce(
+      (total, bid) => total + bid.transaction.amount,
+      0
+    );
+
+    // It's possible that the user has not made any bids on this item yet.
+    // In that case, we don't need to create a `CREDIT` transaction.
+    if (previousBidTotal > 0) {
+      await tx.transaction.create({
+        data: {
+          userId: user.id,
+          amount: previousBidTotal,
+          type: 'CREDIT',
+        },
+      });
     }
 
     // Now that we know the user has enough balance, we can create the `DEBIT`

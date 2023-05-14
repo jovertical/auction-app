@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { decode } from 'next-auth/jwt';
 
+import { UserService } from '@/services/user.service';
 import { rescueAsync } from '@/utils';
 import { db } from '@/utils/db';
 import { compareHash } from '@/utils/hashing';
@@ -39,25 +40,9 @@ export async function GET(request: NextRequest) {
 
   if (!user) return response.unauthorized();
 
-  const transactionBreakdown = await db.transaction.groupBy({
-    by: ['type'],
+  const userService = new UserService(user);
 
-    where: {
-      userId: user.id,
-    },
-
-    _sum: {
-      amount: true,
-    },
-  });
-
-  const balance = transactionBreakdown.reduce((carry, item) => {
-    if (item.type === 'CREDIT') {
-      return carry + (item._sum.amount ?? 0);
-    }
-
-    return carry - (item._sum.amount ?? 0);
-  }, 0);
+  const balance = await userService.getBalance();
 
   return response.json({
     user: {
