@@ -4,7 +4,7 @@ This is an app that allows users to post items for auction and other users to bi
 
 ## 🚀 Quick Start
 
-Run project locally - needs a deployed Next.js app (see [Deployment](#deployment))):
+Run project locally - needs a deployed Next.js app (see [Deployment](#deployment)):
 
 ```bash
 # First, install dependencies
