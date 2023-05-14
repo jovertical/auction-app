@@ -1,9 +1,7 @@
-import type { PropsWithChildren } from 'react';
-
 import ActivityFeed from '@/components/dashboard/activity-feed';
+import Header from '@/components/dashboard/header';
 import MobileNavigation from '@/components/dashboard/mobile-navigation';
 import Navigation from '@/components/dashboard/navigation';
-import SearchBar from '@/components/dashboard/search-bar';
 import NotificationInterceptor from '@/components/notification-interceptor';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -14,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Navigation />
 
       <div className="xl:pl-72">
-        <SearchBar />
+        <Header />
 
         <main className="lg:pr-96">{children}</main>
 

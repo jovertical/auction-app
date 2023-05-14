@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import Logo from '@/components/logo';
-import UserAvatar from '@/components/user-avatar';
 import { links } from '@/config/navigation';
 import { cx } from '@/utils';
 
@@ -42,10 +41,6 @@ function Navigation() {
                   </li>
                 ))}
               </ul>
-            </li>
-
-            <li className="-mx-6 mt-auto">
-              <UserAvatar />
             </li>
           </ul>
         </nav>

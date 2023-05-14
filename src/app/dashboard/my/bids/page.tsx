@@ -1,7 +1,11 @@
 export default function Page() {
   return (
-    <div className="flex h-screen items-center justify-center">
-      <h1 className="text-white text-3xl font-medium">Bid listing page</h1>
-    </div>
+    <>
+      <header className="flex items-center justify-between px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <h1 className="text-base font-semibold leading-7 text-white">
+          Your bids
+        </h1>
+      </header>
+    </>
   );
 }

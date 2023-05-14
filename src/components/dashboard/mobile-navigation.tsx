@@ -9,7 +9,7 @@ import { Fragment, useState } from 'react';
 import Logo from '@/components/logo';
 import { links } from '@/config/navigation';
 import { cx } from '@/utils';
-import UserAvatar from '@/components/user-avatar';
+import UserMenu from '@/components/user-menu';
 
 function MobileNavigation() {
   const pathname = usePathname();
@@ -99,7 +99,7 @@ function MobileNavigation() {
                     </li>
 
                     <li className="-mx-6 mt-auto">
-                      <UserAvatar />
+                      <UserMenu />
                     </li>
                   </ul>
                 </nav>
