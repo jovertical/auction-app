@@ -54,7 +54,9 @@ export default function Page() {
   return (
     <>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Logo className="h-16 w-auto mx-auto" />
+        <Link href="/">
+          <Logo className="h-16 w-auto mx-auto" />
+        </Link>
 
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
           Create your account

@@ -56,7 +56,7 @@ export default function Page() {
     const response = await signIn('credentials', {
       email: values.email,
       password: values.password,
-      callbackUrl: `${window.location.origin}/dashboard`,
+      callbackUrl: `${window.location.origin}/dashboard/live`,
       redirect: false,
     });
 
@@ -86,7 +86,9 @@ export default function Page() {
   return (
     <>
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <Logo className="h-16 w-auto mx-auto" />
+        <Link href="/">
+          <Logo className="h-16 w-auto mx-auto" />
+        </Link>
 
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
           Sign in to your account
