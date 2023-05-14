@@ -8,10 +8,11 @@ import { useContext, useMemo, Fragment } from 'react';
 
 import withSessionProvider from '@/components/with-session-provider';
 import { cx, generateAvatarColor } from '@/utils';
+import { currencyFormat } from '@/utils/number';
 
 const navigation = [
   { name: 'Your profile', href: '#' },
-  { name: 'Deposit', href: '#' },
+  { name: 'Deposit', href: '/dashboard/deposit' },
 ];
 
 const colors = {
@@ -38,7 +39,20 @@ function UserMenu() {
     return `${first[0]}${last[0]}`;
   }, [user]);
 
-  if (!user) return null;
+  if (session?.status === 'loading' || !user) {
+    return (
+      <div className="-m-1.5 flex items-center p-1.5 relative">
+        <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-700 animate-pulse"></div>
+        <div className="hidden lg:flex lg:items-center">
+          <div className="ml-4">
+            <div className="h-3 w-10 bg-gray-700 animate-pulse mx-auto"></div>
+            <div className="mt-2.5 h-3 w-14 bg-gray-700 animate-pulse"></div>
+          </div>
+          <div className="ml-2.5 h-4 w-4 rounded-sm bg-gray-700 animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Menu as="div" className="relative">
@@ -57,15 +71,18 @@ function UserMenu() {
         </span>
 
         <span className="hidden lg:flex lg:items-center">
-          <span
-            className="ml-4 text-sm font-semibold leading-6 text-white"
-            aria-hidden="true"
-          >
-            {user.name}
+          <span className="ml-4" aria-hidden="true">
+            <span className="text-sm font-semibold leading-6 text-white">
+              {user.name}
+            </span>
+
+            <span className="-mt-px flex text-yellow-500 text-xs font-medium">
+              {currencyFormat(user.balance)}
+            </span>
           </span>
 
           <ChevronDownIcon
-            className="ml-2 h-5 w-5 text-gray-400"
+            className="ml-2.5 h-5 w-5 text-gray-400"
             aria-hidden="true"
           />
         </span>

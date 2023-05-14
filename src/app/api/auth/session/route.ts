@@ -24,7 +24,10 @@ export async function GET(request: NextRequest) {
   if (!decodedToken?.sub) return response.unauthorized();
 
   const user = await db.user.findUnique({
-    where: { id: parseInt(decodedToken.sub) },
+    where: {
+      id: parseInt(decodedToken.sub),
+    },
+
     select: {
       id: true,
       name: true,
@@ -36,11 +39,32 @@ export async function GET(request: NextRequest) {
 
   if (!user) return response.unauthorized();
 
+  const transactionBreakdown = await db.transaction.groupBy({
+    by: ['type'],
+
+    where: {
+      userId: user.id,
+    },
+
+    _sum: {
+      amount: true,
+    },
+  });
+
+  const balance = transactionBreakdown.reduce((carry, item) => {
+    if (item.type === 'CREDIT') {
+      return carry + (item._sum.amount ?? 0);
+    }
+
+    return carry - (item._sum.amount ?? 0);
+  }, 0);
+
   return response.json({
     user: {
       id: user.id,
       name: user.name,
       email: user.email,
+      balance,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
     },
@@ -56,13 +80,7 @@ export async function POST(request: NextRequest) {
   }));
 
   if (!input.success) {
-    return response.json(
-      {
-        message: 'Invalid data provided.',
-        errors: input.error.formErrors.fieldErrors,
-      },
-      { status: 422 }
-    );
+    return response.inputError(input.error.formErrors.fieldErrors);
   }
 
   const user = await db.user.findUnique({
