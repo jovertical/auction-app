@@ -1,13 +1,13 @@
-import * as Ably from 'ably/promises';
 import { NextRequest } from 'next/server';
 
+import { UserService } from '@/services/user.service';
 import { getUser } from '@/utils/auth';
 import { date } from '@/utils/date';
 import { db } from '@/utils/db';
+import { channels } from '@/utils/pusher';
 import * as response from '@/utils/http/response';
 import { currencyFormat } from '@/utils/number';
 import { validate } from '@/utils/validation';
-import { UserService } from '@/services/user.service';
 
 const findItem = async (id: number) => {
   const item = await db.item.findUnique({
@@ -15,6 +15,8 @@ const findItem = async (id: number) => {
     select: {
       id: true,
       sellerId: true,
+      name: true,
+      description: true,
       status: true,
       startingPrice: true,
       publishedAt: true,
@@ -197,18 +199,13 @@ export async function POST(
     return bid;
   });
 
-  if (process.env.ABLY_API_KEY) {
-    const client = new Ably.Rest(process.env.ABLY_API_KEY);
+  const updatedItem = await findItem(itemId);
 
-    const channel = client.channels.get('live:item');
-
-    const updatedItem = await findItem(itemId);
-
-    channel.publish('live:item:bid-posted', {
-      bid,
-      item: updatedItem,
-    });
-  }
+  // Trigger a `bid-posted` event on the `live` channel.
+  channels.trigger('live', 'item:bid-posted', {
+    bid,
+    item: updatedItem,
+  });
 
   return response.json(bid);
 }

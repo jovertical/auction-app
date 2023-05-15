@@ -6,6 +6,7 @@ import { serve } from 'inngest/next';
 import { sleep } from '@/utils';
 import { date } from '@/utils/date';
 import { db } from '@/utils/db';
+import { channels } from '@/utils/pusher';
 
 const inngest = new Inngest({
   name: 'Jitera Auctions',
@@ -71,13 +72,8 @@ const liveItemExpired = inngest.createFunction(
     // We need to determine the winner of the auction
     // Then the seller will be credited with the amount
 
-    if (process.env.ABLY_API_KEY) {
-      const client = new Ably.Rest(process.env.ABLY_API_KEY);
-
-      const channel = client.channels.get('live:item');
-
-      channel.publish('live:item:expired', event.data.item);
-    }
+    // Trigger the event
+    channels.trigger('live', 'item:expired', event.data.item);
   }
 );
 

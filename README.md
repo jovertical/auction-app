@@ -40,7 +40,7 @@ npm run dev
 - [Node.js](https://nodejs.org/en/) - REST API
 - [PostgreSQL](https://www.postgresql.org/) - Database
 - [Prisma](https://www.prisma.io/) - ORM
-- [Ably](https://ably.com/) - Realtime API
+- [Pusher](https://pusher.com/) - Realtime events / PubSub
 - [Inngest](https://inngest.io/) - CRON jobs
 - [Vercel](https://vercel.com/) - Deployment
 
@@ -67,7 +67,6 @@ vercel link my-project-name
 # Setup environment variables
 vercel env add NEXTAUTH_URL production # https://[app-name].vercel.app
 vercel env add NEXTAUTH_SECRET production # [random string]
-vercel env add ABLY_API_KEY production # [Ably API Key] - https://faqs.ably.com/setting-up-and-managing-api-keys
 
 # Deploy
 vercel --prod

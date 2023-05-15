@@ -1,7 +1,6 @@
 'use client';
 
-import { configureAbly } from '@ably-labs/react-hooks';
-import * as Ably from 'ably/promises';
+import Pusher from 'pusher-js';
 import { SessionContext } from 'next-auth/react';
 import { useContext, useState, useMemo, useCallback, useEffect } from 'react';
 
@@ -68,24 +67,19 @@ export default function Page() {
   useEffect(() => {
     loadItems();
 
-    const ably: Ably.Types.RealtimePromise = configureAbly({
-      authUrl: '/api/socket/authenticate',
-      queryTime: true,
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_APP_KEY ?? '', {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER ?? '',
     });
 
-    const liveItemChannel = ably.channels.get('live:item');
+    const liveItemChannel = pusher.subscribe('live');
 
-    liveItemChannel.subscribe('live:item:bid-posted', (message) => {
-      const updatedItem = message.data?.item;
-
+    liveItemChannel.bind('item:bid-posted', (updatedItem: any) => {
       if (updatedItem) {
-        shallowUpdateItems(updatedItem);
+        shallowUpdateItems(updatedItem.item);
       }
     });
 
-    liveItemChannel.subscribe('live:item:expired', (message) => {
-      const expiredItem = message.data;
-
+    liveItemChannel.bind('item:expired', (expiredItem: any) => {
       if (expiredItem) {
         setItems((prevItems) => {
           return prevItems.filter((item) => item.id !== expiredItem.id);
@@ -94,7 +88,7 @@ export default function Page() {
     });
 
     return () => {
-      liveItemChannel.unsubscribe();
+      liveItemChannel.disconnect();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -6,7 +6,7 @@ import NotificationInterceptor from '@/components/notification-interceptor';
 
 export default function Layout(props: {
   children: React.ReactNode;
-  slots?: React.ReactNode;
+  slots: React.ReactNode;
 }) {
   return (
     <>
