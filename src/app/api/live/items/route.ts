@@ -1,9 +1,36 @@
+import { NextRequest } from 'next/server';
+
 import { getUser } from '@/utils/auth';
 import { db } from '@/utils/db';
 import * as response from '@/utils/http/response';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const params = request.nextUrl.searchParams;
+
+  const sort = params.get('sort') ?? 'closing-soon';
+
   const user = await getUser();
+
+  const sortMap = {
+    'closing-soon': {
+      expiresAt: 'asc',
+    },
+
+    'highest-price-first': {
+      item: {
+        startingPrice: 'desc',
+      },
+    },
+
+    'lowest-price-first': {
+      item: {
+        startingPrice: 'asc',
+      },
+    },
+  };
+
+  // prettier-ignore
+  const sortOption = sortMap[sort as keyof typeof sortMap] ?? sortMap['closing-soon'];
 
   const items = await db.listingItem.findMany({
     where: {
@@ -19,6 +46,9 @@ export async function GET() {
         },
       },
     },
+
+    // @ts-ignore
+    orderBy: sortOption,
 
     select: {
       id: true,

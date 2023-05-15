@@ -2,15 +2,18 @@
 
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
+import Link from 'next/link';
 import { Fragment } from 'react';
 
 import { cx } from '@/utils';
 
-interface Props {
-  //
-}
+const options = [
+  { name: 'Closing Soon', value: 'closing-soon' },
+  { name: 'Lowest Price First', value: 'lowest-price-first' },
+  { name: 'Highest Price First', value: 'highest-price-first' },
+];
 
-export default function ListSortMenu(props: Props) {
+export default function ListSortMenu() {
   return (
     <Menu as="div" className="relative">
       <Menu.Button className="flex items-center gap-x-1 text-sm font-medium leading-6 text-white">
@@ -31,47 +34,21 @@ export default function ListSortMenu(props: Props) {
         leaveTo="transform opacity-0 scale-95"
       >
         <Menu.Items className="absolute right-0 z-10 mt-2.5 w-40 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
-          <Menu.Item>
-            {({ active }) => (
-              <a
-                href="#"
-                className={cx(
-                  active ? 'bg-gray-50' : '',
-                  'block px-3 py-1 text-sm leading-6 text-gray-900'
-                )}
-              >
-                Closing Soon
-              </a>
-            )}
-          </Menu.Item>
-
-          <Menu.Item>
-            {({ active }) => (
-              <a
-                href="#"
-                className={cx(
-                  active ? 'bg-gray-50' : '',
-                  'block px-3 py-1 text-sm leading-6 text-gray-900'
-                )}
-              >
-                Lowest Price First
-              </a>
-            )}
-          </Menu.Item>
-
-          <Menu.Item>
-            {({ active }) => (
-              <a
-                href="#"
-                className={cx(
-                  active ? 'bg-gray-50' : '',
-                  'block px-3 py-1 text-sm leading-6 text-gray-900'
-                )}
-              >
-                Highest Price First
-              </a>
-            )}
-          </Menu.Item>
+          {options.map((option) => (
+            <Menu.Item key={option.value}>
+              {({ active }) => (
+                <Link
+                  href={`/dashboard/live?sort=${option.value}`}
+                  className={cx(
+                    active ? 'bg-gray-50' : '',
+                    'block px-3 py-1 text-sm leading-6 text-gray-900'
+                  )}
+                >
+                  {option.name}
+                </Link>
+              )}
+            </Menu.Item>
+          ))}
         </Menu.Items>
       </Transition>
     </Menu>

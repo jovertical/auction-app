@@ -50,13 +50,19 @@ type ListingItem = {
   }[];
 };
 
-async function getItems() {
-  const items = await api.get<ListingItem[]>('/live/items');
+async function getItems(sort: string = 'closing-soon') {
+  const items = await api.get<ListingItem[]>(`/live/items`, { sort });
 
   return items.error ? [] : items.data;
 }
 
-export default function Page() {
+export default function Page({
+  searchParams,
+}: {
+  searchParams: {
+    sort: string;
+  };
+}) {
   const session = useContext(SessionContext);
 
   const [items, setItems] = useState<ListingItem[]>([]);
@@ -75,16 +81,19 @@ export default function Page() {
     [setItems]
   );
 
-  const loadItems = useCallback(async () => {
-    if (itemsLoading) return;
+  const loadItems = useCallback(
+    async (sort?: string) => {
+      if (itemsLoading) return;
 
-    setItemsLoading(true);
+      setItemsLoading(true);
 
-    const items = await getItems();
+      const items = await getItems(sort);
 
-    setItems(items);
-    setItemsLoading(false);
-  }, [itemsLoading]);
+      setItems(items);
+      setItemsLoading(false);
+    },
+    [itemsLoading]
+  );
 
   useEffect(() => {
     loadItems();
@@ -117,6 +126,12 @@ export default function Page() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    loadItems(searchParams.sort);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.sort]);
 
   return (
     <>
