@@ -25,8 +25,9 @@ npm run dev
 - [x] User authentication
 - [x] Item listing and publishing
 - [x] Credit deposit
-- [x] Live auction with support to multiple bidders
-- [ ] Live auction events
+- [x] Live auction
+- [x] Auctioned item closing (CRON job)
+- [x] Realtime activity feed
 - [ ] Bid history
 
 ## Tech Stack
