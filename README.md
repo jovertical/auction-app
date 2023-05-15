@@ -42,6 +42,7 @@ npm run dev
 - [PostgreSQL](https://www.postgresql.org/) - Database
 - [Prisma](https://www.prisma.io/) - ORM
 - [Ably](https://ably.com/) - Realtime API
+- [Inngest](https://inngest.io/) - CRON jobs
 - [Vercel](https://vercel.com/) - Deployment
 
 ## Testing

@@ -72,9 +72,9 @@ export default function Page() {
       authUrl: '/api/socket/authenticate',
     });
 
-    const bidPostedChannel = ably.channels.get('live:bid-posted');
+    const liveItemChannel = ably.channels.get('live:item');
 
-    bidPostedChannel.subscribe((message) => {
+    liveItemChannel.subscribe('live:item:bid-posted', (message) => {
       const updatedItem = message.data?.item;
 
       if (updatedItem) {
@@ -82,8 +82,20 @@ export default function Page() {
       }
     });
 
+    liveItemChannel.subscribe('live:item:expired', (message) => {
+      const expiredItem = message.data;
+
+      console.log('expiredItem', expiredItem);
+
+      if (expiredItem) {
+        setItems((prevItems) => {
+          return prevItems.filter((item) => item.id !== expiredItem.id);
+        });
+      }
+    });
+
     return () => {
-      bidPostedChannel.unsubscribe();
+      liveItemChannel.unsubscribe();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

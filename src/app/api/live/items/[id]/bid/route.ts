@@ -197,17 +197,14 @@ export async function POST(
     return bid;
   });
 
-  // We'll publish the bid to Ably so that we can update the live auction page in real time
-  // Typically, an error must be thrown if the bid cannot be published to Ably.
-  // However, we don't want to prevent the user from bidding if Ably is mis-configured.
   if (process.env.ABLY_API_KEY) {
     const client = new Ably.Rest(process.env.ABLY_API_KEY);
 
-    const channel = client.channels.get('live:bid-posted');
+    const channel = client.channels.get('live:item');
 
     const updatedItem = await findItem(itemId);
 
-    channel.publish('bid-posted', {
+    channel.publish('live:item:bid-posted', {
       bid,
       item: updatedItem,
     });

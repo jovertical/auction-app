@@ -36,3 +36,7 @@ export const rescue = <T>(fn: () => T, fallback?: T): T | undefined => {
     return fallback;
   }
 };
+
+export const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
