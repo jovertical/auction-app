@@ -71,15 +71,13 @@ const liveItemExpired = inngest.createFunction(
     // We need to determine the winner of the auction
     // Then the seller will be credited with the amount
 
-    if (process.env.ABLY_API_KEY) {
-      const client = new Ably.Rest(process.env.ABLY_API_KEY);
+    // if (process.env.ABLY_API_KEY) {
+    //   const client = new Ably.Rest(process.env.ABLY_API_KEY);
 
-      await client.auth.createTokenRequest();
+    //   const channel = client.channels.get('live:item');
 
-      const channel = client.channels.get('live:item');
-
-      channel.publish('live:item:expired', event.data.item);
-    }
+    //   channel.publish('live:item:expired', event.data.item);
+    // }
   }
 );
 
