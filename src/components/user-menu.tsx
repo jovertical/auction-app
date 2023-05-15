@@ -4,7 +4,8 @@ import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
 import { SessionContext, signOut } from 'next-auth/react';
-import { useContext, useMemo, Fragment } from 'react';
+import Pusher from 'pusher-js';
+import { useContext, useState, useMemo, useEffect, Fragment } from 'react';
 
 import withSessionProvider from '@/components/with-session-provider';
 import { cx, generateAvatarColor } from '@/utils';
@@ -25,6 +26,8 @@ const colors = {
 function UserMenu() {
   const session = useContext(SessionContext);
 
+  const [balance, setBalance] = useState(0);
+
   const user = useMemo(() => session?.data?.user, [session?.data]);
 
   const initials = useMemo(() => {
@@ -37,6 +40,25 @@ function UserMenu() {
     if (!last) return first?.[0] + first?.[1];
 
     return `${first[0]}${last[0]}`;
+  }, [user]);
+
+  useEffect(() => {
+    setBalance(user?.balance ?? 0);
+
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_APP_KEY ?? '', {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER ?? '',
+      authEndpoint: '/api/socket/auth',
+    });
+
+    const channel = pusher.subscribe(`private-user.${user?.id}`);
+
+    channel.bind('balance-updated', (data: any) => {
+      setBalance(data.balance);
+    });
+
+    return () => {
+      pusher.disconnect();
+    };
   }, [user]);
 
   if (session?.status === 'loading' || !user) {
@@ -77,7 +99,7 @@ function UserMenu() {
             </span>
 
             <span className="-mt-px flex text-yellow-500 text-xs font-medium">
-              {currencyFormat(user.balance)}
+              {currencyFormat(balance)}
             </span>
           </span>
 

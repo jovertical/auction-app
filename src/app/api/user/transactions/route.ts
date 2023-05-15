@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server';
 
+import { UserService } from '@/services/user.service';
 import { getUser } from '@/utils/auth';
 import { db } from '@/utils/db';
 import * as response from '@/utils/http/response';
+import { channels } from '@/utils/pusher';
 import { validate } from '@/utils/validation';
 
 export async function POST(request: NextRequest) {
@@ -32,6 +34,14 @@ export async function POST(request: NextRequest) {
       type: 'CREDIT',
       description: 'Deposit',
     },
+  });
+
+  const userService = new UserService(user as any);
+
+  const newBalance = await userService.getBalance();
+
+  channels.trigger(`private-user.${user.id}`, 'balance-updated', {
+    balance: newBalance,
   });
 
   return response.json(transaction, { status: 201 });
