@@ -119,42 +119,50 @@ export async function POST(
     return response.forbidden('This item has expired.');
   }
 
+  // Whether or not the item has bids
+  const hadBids = listingItem.bids.length > 0;
+
+  // The user's bids on this item
+  const userBids = listingItem.bids.filter(
+    (bid) => bid.bidder.id === BigInt(user.id)
+  );
+
   // If the item has no bids, the starting price is the minimum bid.
-  // Otherwise, the minimum bid is the highest bid + 100 cents.
+  // Otherwise, the highest bid is the minimum bid plus 100 cents.
   // prettier-ignore
-  const minimumPrice = listingItem.bids.length === 0
-      ? listingItem.item.startingPrice
-      : listingItem.bids.reduce((highest, bid) => Math.max(highest, bid.transaction.amount), 0) + 100;
+  const minimumPrice = hadBids
+    ? listingItem.bids[0].transaction.amount + 100
+    : listingItem.item.startingPrice
 
   // The bid must be at least the minimum price/bid.
-  if (minimumPrice > input.data.bid * 100) {
+  if (input.data.bid * 100 < minimumPrice) {
     return response.inputError({
       bid: [`You must bid at least ${currencyFormat(minimumPrice)}`],
     });
   }
 
   // Ensure that the user has enough balance to make the bid.
-  if (user.balance < input.data.bid * 100) {
+  // If the user has made a bid on this item before, we need to calculate the
+  // remaining balance plus their highest bid (technically, the second highest)
+  // prettier-ignore
+  if (((userBids[0]?.transaction.amount ?? 0) + user.balance) < input.data.bid * 100) {
     return response.inputError({
       bid: ['You do not have enough balance to make this bid.'],
     });
   }
 
   const bid = await db.$transaction(async (tx) => {
-    const balance = await userService.getBalance();
-
-    // Before we create the `DEBIT` transaction, we need to ensure that the
-    // user has enough balance to make the bid.
-    if (balance < input.data.bid * 100) {
-      throw new Error('Insufficient balance');
-    }
-
-    // Sum the total amount of bids that the user has made on this item.
-    // Then create a `CREDIT` transaction to refund the user's previous bids.
-    const previousBids = await tx.bid.findMany({
+    // Get the highest bid the user made on this item.
+    const highestBid = await tx.bid.findFirst({
       where: {
         bidderId: user.id,
         listingItemId: listingItem.id,
+      },
+
+      orderBy: {
+        transaction: {
+          amount: 'desc',
+        },
       },
 
       select: {
@@ -166,19 +174,17 @@ export async function POST(
       },
     });
 
-    // Sum the total amount of the user's previous bids.
-    const previousBidTotal = previousBids.reduce(
-      (total, bid) => total + bid.transaction.amount,
-      0
-    );
+    // If the user has made a bid on this item before, we need to refund the
+    // previous bid amount to the user's balance.
+    const previousBid = highestBid ? highestBid.transaction.amount : 0;
 
     // It's possible that the user has not made any bids on this item yet.
     // In that case, we don't need to create a `CREDIT` transaction.
-    if (previousBidTotal > 0) {
+    if (previousBid > 0) {
       await tx.transaction.create({
         data: {
           userId: user.id,
-          amount: previousBidTotal,
+          amount: previousBid,
           type: 'CREDIT',
           description: `Refund for previous bids on ${listingItem.item.name}`,
         },
@@ -210,6 +216,18 @@ export async function POST(
       },
     });
 
+    // Record an activity for this bid.
+    // prettier-ignore
+    await tx.activity.create({
+      data: {
+        userId: user.id,
+        type: 'BID',
+        content: previousBid 
+          ? `${user.name} bid on ${listingItem.item.name} (previous bid: ${currencyFormat(previousBid)})`
+          : `${user.name} bid on ${listingItem.item.name}`,
+      },
+    });
+
     return bid;
   });
 
@@ -219,6 +237,13 @@ export async function POST(
   channels.trigger('live', 'item:bid-posted', {
     bid,
     item: updatedListingItem,
+  });
+
+  // Notify the user that their account balance has been updated.
+  const newBalance = await userService.getBalance();
+
+  channels.trigger(`private-user.${user.id}`, 'balance-updated', {
+    balance: newBalance,
   });
 
   return response.json(bid);
