@@ -7,7 +7,7 @@ import { sleep } from '@/utils';
 import { date } from '@/utils/date';
 import { db } from '@/utils/db';
 
-export const inngest = new Inngest({
+const inngest = new Inngest({
   name: 'Jitera Auctions',
   eventKey: process.env.INNGEST_EVENT_KEY,
 });
