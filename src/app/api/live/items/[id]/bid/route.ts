@@ -218,7 +218,22 @@ export async function POST(
 
     // Record an activity for this bid.
     // prettier-ignore
-    await tx.activity.create({
+    const activity = await tx.activity.create({
+      select: {
+        id: true,
+        userId: true,
+        type: true,
+        content: true,
+        createdAt: true,
+
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        }
+      },
+
       data: {
         userId: user.id,
         type: 'BID',
@@ -227,6 +242,8 @@ export async function POST(
           : `${user.name} bid on ${listingItem.item.name}`,
       },
     });
+
+    channels.trigger('live', 'activity:recorded', activity);
 
     return bid;
   });

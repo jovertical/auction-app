@@ -7,21 +7,15 @@ import { SessionContext, signOut } from 'next-auth/react';
 import Pusher from 'pusher-js';
 import { useContext, useState, useMemo, useEffect, Fragment } from 'react';
 
+import UserAvatar from '@/components/user-avatar';
 import withSessionProvider from '@/components/with-session-provider';
-import { cx, generateAvatarColor } from '@/utils';
+import { cx } from '@/utils';
 import { currencyFormat } from '@/utils/number';
 
 const navigation = [
   { name: 'Your profile', href: '#' },
   { name: 'Deposit', href: '/dashboard/deposit' },
 ];
-
-const colors = {
-  gray: 'bg-gray-600',
-  red: 'bg-red-600',
-  teal: 'bg-teal-600',
-  pink: 'bg-pink-600',
-};
 
 function UserMenu() {
   const session = useContext(SessionContext);
@@ -81,16 +75,7 @@ function UserMenu() {
       <Menu.Button className="-m-1.5 flex items-center p-1.5">
         <span className="sr-only">Open user menu</span>
 
-        <span
-          className={cx(
-            'inline-flex h-10 w-10 items-center justify-center rounded-full',
-            colors[generateAvatarColor(initials ?? '')]
-          )}
-        >
-          <span className="font-medium leading-none text-white">
-            {initials}
-          </span>
-        </span>
+        <UserAvatar user={user} />
 
         <span className="hidden lg:flex lg:items-center">
           <span className="ml-4" aria-hidden="true">

@@ -87,15 +87,15 @@ export default function Page() {
       cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER ?? '',
     });
 
-    const liveItemChannel = pusher.subscribe('live');
+    const liveChannel = pusher.subscribe('live');
 
-    liveItemChannel.bind('item:bid-posted', (updatedItem: any) => {
+    liveChannel.bind('item:bid-posted', (updatedItem: any) => {
       if (updatedItem) {
         shallowUpdateItems(updatedItem.item);
       }
     });
 
-    liveItemChannel.bind('item:expired', (data: any) => {
+    liveChannel.bind('item:expired', (data: any) => {
       if (data) {
         setItems((prevListingItems) => {
           return prevListingItems.filter(
@@ -106,7 +106,7 @@ export default function Page() {
     });
 
     return () => {
-      liveItemChannel.disconnect();
+      liveChannel.disconnect();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
