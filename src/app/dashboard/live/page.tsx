@@ -70,6 +70,7 @@ export default function Page() {
 
     const ably: Ably.Types.RealtimePromise = configureAbly({
       authUrl: '/api/socket/authenticate',
+      queryTime: true,
     });
 
     const liveItemChannel = ably.channels.get('live:item');
@@ -84,8 +85,6 @@ export default function Page() {
 
     liveItemChannel.subscribe('live:item:expired', (message) => {
       const expiredItem = message.data;
-
-      console.log('expiredItem', expiredItem);
 
       if (expiredItem) {
         setItems((prevItems) => {
