@@ -1,4 +1,3 @@
-import * as Ably from 'ably/promises';
 import { Inngest } from 'inngest';
 import type { EventPayload } from 'inngest';
 import { serve } from 'inngest/next';
