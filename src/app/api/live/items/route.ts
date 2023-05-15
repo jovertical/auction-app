@@ -7,7 +7,7 @@ export async function GET() {
 
   const items = await db.item.findMany({
     where: {
-      status: 'published',
+      status: 'PUBLISHED',
 
       expiresAt: {
         gt: new Date(),

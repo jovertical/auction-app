@@ -96,7 +96,7 @@ export async function POST(
   }
 
   // Only published items can be bid on.
-  if (item.status !== 'published') {
+  if (item.status !== 'PUBLISHED') {
     return response.forbidden(
       'This item is not published yet. Please try again later.'
     );
@@ -168,6 +168,7 @@ export async function POST(
           userId: user.id,
           amount: previousBidTotal,
           type: 'CREDIT',
+          description: `Refund for previous bids on ${item.name}`,
         },
       });
     }
@@ -179,6 +180,7 @@ export async function POST(
         userId: user.id,
         amount: input.data.bid * 100,
         type: 'DEBIT',
+        description: `Bid on ${item.name}`,
       },
     });
 

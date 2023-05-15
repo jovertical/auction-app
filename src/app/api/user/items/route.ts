@@ -38,13 +38,7 @@ export async function POST(request: NextRequest) {
   }));
 
   if (!input.success) {
-    return response.json(
-      {
-        message: 'Invalid data provided.',
-        errors: input.error.formErrors.fieldErrors,
-      },
-      { status: 422 }
-    );
+    return response.inputError(input.error.formErrors.fieldErrors);
   }
 
   const item = await db.item.create({

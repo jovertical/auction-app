@@ -26,18 +26,18 @@ export async function POST(
   if (item.sellerId !== BigInt(userId ?? '')) return response.forbidden();
 
   // Only draft items can be published.
-  if (item.status !== 'draft') {
+  if (item.status !== 'DRAFT') {
     return response.forbidden('Only items in draft status can be published.');
   }
 
-  // Set the item's `status` to published
+  // Set the item's `status` to PUBLISHED
   // Set the `publishedAt` date to `now`.
   // Set the `expiresAt` date to `now + timeWindow`.
   const updatedItem = await db.item.update({
     where: { id: parseInt(params.id, 10) },
 
     data: {
-      status: 'published',
+      status: 'PUBLISHED',
       publishedAt: date().toDate(),
       expiresAt: date().add(item.timeWindow, 'hours').toDate(),
     },

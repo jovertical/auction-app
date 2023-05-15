@@ -8,8 +8,8 @@ import { date } from '@/utils/date';
 import { db } from '@/utils/db';
 
 const statuses = {
-  published: 'text-green-400 bg-green-400/10',
-  draft: 'text-yellow-400 bg-yellow-400/10',
+  PUBLISHED: 'text-green-400 bg-green-400/10',
+  DRAFT: 'text-yellow-400 bg-yellow-400/10',
 };
 
 async function getUserItems(userId: number) {
@@ -187,7 +187,7 @@ export default async function Page() {
                       </td>
 
                       <td className="hidden py-4 pl-0 pr-4 text-right text-sm leading-6 text-indigo-500 hover:text-indigo-600 font-semibold uppercase sm:table-cell sm:pr-6 lg:pr-8">
-                        {item.status === 'draft' && (
+                        {item.status === 'DRAFT' && (
                           <Link
                             href={`/dashboard/my/listing/${item.id}/publish`}
                           >

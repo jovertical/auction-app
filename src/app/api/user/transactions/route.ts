@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       amount: input.data.amount * 100,
       type: 'CREDIT',
+      description: 'Deposit',
     },
   });
 

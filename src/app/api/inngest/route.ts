@@ -18,10 +18,10 @@ const prepareLiveItemExpired = inngest.createFunction(
   async ({ step }) => {
     await db.$connect();
 
-    // Get all items that are published and have expired
+    // Get all items that are `PUBLISHED` and have expired
     const items = await db.item.findMany({
       where: {
-        status: 'published',
+        status: 'PUBLISHED',
         expiresAt: {
           gte: new Date(),
         },
@@ -29,6 +29,7 @@ const prepareLiveItemExpired = inngest.createFunction(
 
       select: {
         id: true,
+        sellerId: true,
         name: true,
         expiresAt: true,
       },
@@ -41,6 +42,7 @@ const prepareLiveItemExpired = inngest.createFunction(
         __date: date().toDate(),
         item: {
           id: item.id,
+          sellerId: item.sellerId,
           name: item.name,
           expiresAt: item.expiresAt,
         },
@@ -68,8 +70,44 @@ const liveItemExpired = inngest.createFunction(
 
     await sleep(delay * 1000);
 
-    // We need to determine the winner of the auction
-    // Then the seller will be credited with the amount
+    await db.$connect();
+
+    db.$transaction(async () => {
+      const highestBid = await db.bid.findFirst({
+        where: {
+          itemId: event.data.item.id,
+        },
+
+        orderBy: {
+          transaction: {
+            amount: 'desc',
+          },
+        },
+
+        select: {
+          id: true,
+
+          bidder: {
+            select: {
+              id: true,
+            },
+          },
+
+          transaction: {
+            select: {
+              id: true,
+              amount: true,
+            },
+          },
+        },
+      });
+
+      if (!highestBid) {
+        return;
+      }
+    });
+
+    await db.$disconnect();
 
     // Trigger the event
     channels.trigger('live', 'item:expired', event.data.item);

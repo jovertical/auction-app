@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "prisma": "dotenv -e .env.development.local -- npx prisma",
-    "test:types": "",
+    "test:types": "tsc --noEmit -p tsconfig-testing.json",
     "test:lint": "eslint --max-warnings 0 --ext .js,.jsx.ts,.tsx src",
     "test:lint:fix": "npm run test:lint -- --fix",
     "test:unit": "",

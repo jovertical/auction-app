@@ -1,8 +1,7 @@
-import Image from 'next/image';
+'use client';
 
-interface Props {
-  //
-}
+import Image from 'next/image';
+import { useState, useEffect, use } from 'react';
 
 // prettier-ignore
 const activityItems = [
@@ -19,9 +18,20 @@ const activityItems = [
   },
 ];
 
-export default function ActivityFeed(props: Props) {
+export default function ActivityFeed() {
+  const [activities, setActivities] = useState<
+    {
+      user: { name: string };
+      date: string;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    //
+  }, []);
+
   return (
-    <aside className="bg-black/10 lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-white/5 hidden">
+    <aside className="bg-black/10 lg:fixed lg:bottom-0 lg:right-0 lg:top-16 lg:w-96 lg:overflow-y-auto lg:border-l lg:border-white/5">
       <header className="flex items-center justify-between border-b border-white/5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
         <h2 className="text-base font-semibold leading-7 text-white">
           Activity feed
