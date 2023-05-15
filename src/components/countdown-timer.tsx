@@ -21,8 +21,11 @@ export default function CountdownTimer({
   const expired = useMemo(() => {
     const now = new Date();
 
-    return date.getTime() < now.getTime();
-  }, [date]);
+    return (
+      date.getTime() < now.getTime() ||
+      (countdown.hours < 0 && countdown.minutes < 0 && countdown.seconds < 0)
+    );
+  }, [date, countdown]);
 
   const isWithinTheHour = useMemo(() => {
     const now = new Date();

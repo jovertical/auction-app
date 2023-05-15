@@ -95,10 +95,12 @@ export default function Page() {
       }
     });
 
-    liveItemChannel.bind('item:expired', (expiredItem: any) => {
-      if (expiredItem) {
-        setItems((prevItems) => {
-          return prevItems.filter((item) => item.id !== expiredItem.id);
+    liveItemChannel.bind('item:expired', (data: any) => {
+      if (data) {
+        setItems((prevListingItems) => {
+          return prevListingItems.filter(
+            (listingItem) => listingItem.id !== data.id
+          );
         });
       }
     });

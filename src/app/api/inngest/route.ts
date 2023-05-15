@@ -32,8 +32,8 @@ const prepareLiveItemExpired = inngest.createFunction(
         item: {
           select: {
             id: true,
-            name: true,
             userId: true,
+            name: true,
           },
         },
 
@@ -48,12 +48,7 @@ const prepareLiveItemExpired = inngest.createFunction(
       name: 'app/live.item.expired',
       data: {
         __date: date().toDate(),
-        item: {
-          id: listingItem.item.id,
-          owner: listingItem.item.userId,
-          name: listingItem.item.name,
-          expiresAt: listingItem.expiresAt,
-        },
+        listingItem,
       },
     }));
 
@@ -72,7 +67,7 @@ const liveItemExpired = inngest.createFunction(
     // This will ensure that the event is processed after the item has expired
     // This is a hacky solution, but it works for now
     const delay = -date(event.data.__date).diff(
-      date(event.data.item.expiresAt),
+      date(event.data.listingItem.expiresAt),
       'seconds'
     );
 
@@ -80,12 +75,113 @@ const liveItemExpired = inngest.createFunction(
 
     await db.$connect();
 
-    // TODO
+    await db.$transaction(async (tx) => {
+      const highestBid = await tx.bid.findFirst({
+        where: {
+          listingItemId: event.data.listingItem.id,
+        },
+
+        orderBy: {
+          transaction: {
+            amount: 'desc',
+          },
+        },
+
+        select: {
+          id: true,
+          bidderId: true,
+
+          transaction: {
+            select: {
+              id: true,
+              amount: true,
+            },
+          },
+        },
+      });
+
+      // If there's no bid, then we don't need to do anything
+      if (!highestBid) {
+        return;
+      }
+
+      // Mark the item as `SOLD`
+      await tx.item.update({
+        where: {
+          id: event.data.listingItem.item.id,
+        },
+
+        data: {
+          status: 'SOLD',
+        },
+      });
+
+      // Assign the bidder as the winner
+      await tx.listingItem.update({
+        where: {
+          id: event.data.listingItem.id,
+        },
+
+        data: {
+          soldAt: new Date(),
+          soldTo: highestBid.bidderId,
+        },
+      });
+
+      // Credit the seller
+      await tx.transaction.create({
+        data: {
+          userId: event.data.listingItem.item.userId,
+          amount: highestBid.transaction.amount,
+          type: 'CREDIT',
+          description: `Sold ${event.data.listingItem.item.name}`,
+        },
+      });
+
+      // Credit the bidders who lost...
+      const losingBids = await tx.bid.findMany({
+        where: {
+          listingItemId: event.data.listingItem.id,
+          bidderId: {
+            not: highestBid.bidderId,
+          },
+        },
+
+        select: {
+          bidder: {
+            select: {
+              id: true,
+            },
+          },
+
+          transaction: {
+            select: {
+              amount: true,
+            },
+          },
+        },
+      });
+
+      if (losingBids.length > 0) {
+        await Promise.all(
+          losingBids.map(async (bid) => {
+            await tx.transaction.create({
+              data: {
+                userId: bid.bidder.id,
+                amount: bid.transaction.amount,
+                type: 'CREDIT',
+                description: `Lost ${event.data.listingItem.item.name}`,
+              },
+            });
+          })
+        );
+      }
+    });
 
     await db.$disconnect();
 
     // Trigger the event
-    channels.trigger('live', 'item:expired', event.data.item);
+    channels.trigger('live', 'item:expired', event.data.listingItem);
   }
 );
 

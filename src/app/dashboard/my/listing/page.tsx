@@ -8,8 +8,9 @@ import { date } from '@/utils/date';
 import { db } from '@/utils/db';
 
 const statuses = {
-  PUBLISHED: 'text-green-400 bg-green-400/10',
-  DRAFT: 'text-yellow-400 bg-yellow-400/10',
+  DRAFT: 'text-gray-400 bg-gray-400/10',
+  PUBLISHED: 'text-yellow-400 bg-yellow-400/10',
+  SOLD: 'text-green-400 bg-green-400/10',
 };
 
 async function getUserItems(userId: number) {
