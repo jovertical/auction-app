@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
   const item = await db.item.create({
     data: {
-      sellerId: user.id,
+      userId: user.id,
       name: input.data.name,
       description: input.data.description,
       startingPrice: input.data.startingPrice * 100,

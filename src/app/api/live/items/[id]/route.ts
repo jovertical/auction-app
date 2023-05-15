@@ -9,23 +9,30 @@ export async function GET(
 ) {
   const userId = request.headers.get('X-User-Id');
 
-  const item = await db.item.findUnique({
-    where: { id: parseInt(params.id, 10) },
+  const listingItem = await db.listingItem.findUnique({
+    where: {
+      id: parseInt(params.id, 10),
+    },
+
     select: {
       id: true,
-      sellerId: true,
-      name: true,
-      description: true,
-      startingPrice: true,
-      timeWindow: true,
-      publishedAt: true,
-      expiresAt: true,
-      createdAt: true,
-      updatedAt: true,
 
-      seller: {
+      item: {
         select: {
           name: true,
+          description: true,
+          startingPrice: true,
+          timeWindow: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+
+          owner: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
 
@@ -57,10 +64,12 @@ export async function GET(
     },
   });
 
-  if (!item) return response.notFound();
+  if (!listingItem) return response.notFound();
 
   // The seller cannot view the item he's selling.
-  if (item.sellerId === BigInt(userId ?? '')) return response.forbidden();
+  if (listingItem.item.owner.id === BigInt(userId ?? '')) {
+    return response.forbidden();
+  }
 
-  return response.json(item);
+  return response.json(listingItem);
 }

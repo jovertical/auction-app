@@ -18,10 +18,9 @@ const prepareLiveItemExpired = inngest.createFunction(
   async ({ step }) => {
     await db.$connect();
 
-    // Get all items that are `PUBLISHED` and have expired
-    const items = await db.item.findMany({
+    // Get all listing that are have expired
+    const listingItems = await db.listingItem.findMany({
       where: {
-        status: 'PUBLISHED',
         expiresAt: {
           gte: new Date(),
         },
@@ -29,22 +28,31 @@ const prepareLiveItemExpired = inngest.createFunction(
 
       select: {
         id: true,
-        sellerId: true,
-        name: true,
+
+        item: {
+          select: {
+            id: true,
+            name: true,
+            userId: true,
+          },
+        },
+
         expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
     // Create an event for each item
-    const events = items.map<EventPayload>((item) => ({
+    const events = listingItems.map<EventPayload>((listingItem) => ({
       name: 'app/live.item.expired',
       data: {
         __date: date().toDate(),
         item: {
-          id: item.id,
-          sellerId: item.sellerId,
-          name: item.name,
-          expiresAt: item.expiresAt,
+          id: listingItem.item.id,
+          owner: listingItem.item.userId,
+          name: listingItem.item.name,
+          expiresAt: listingItem.expiresAt,
         },
       },
     }));
@@ -72,40 +80,7 @@ const liveItemExpired = inngest.createFunction(
 
     await db.$connect();
 
-    db.$transaction(async () => {
-      const highestBid = await db.bid.findFirst({
-        where: {
-          itemId: event.data.item.id,
-        },
-
-        orderBy: {
-          transaction: {
-            amount: 'desc',
-          },
-        },
-
-        select: {
-          id: true,
-
-          bidder: {
-            select: {
-              id: true,
-            },
-          },
-
-          transaction: {
-            select: {
-              id: true,
-              amount: true,
-            },
-          },
-        },
-      });
-
-      if (!highestBid) {
-        return;
-      }
-    });
+    // TODO
 
     await db.$disconnect();
 

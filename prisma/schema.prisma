@@ -35,33 +35,46 @@ model Account {
 model Bid {
   id            BigInt      @id @default(autoincrement())
   bidderId      BigInt      @map(name: "user_id")
-  itemId        BigInt      @map(name: "item_id")
+  listingItemId BigInt      @map(name: "listing_item_id")
   transactionId BigInt      @map(name: "transaction_id")
   createdAt     DateTime    @default(now()) @map(name: "created_at") @db.Timestamptz()
   bidder        User        @relation(fields: [bidderId], references: [id])
-  item          Item        @relation(fields: [itemId], references: [id])
+  listingItem   ListingItem @relation(fields: [listingItemId], references: [id])
   transaction   Transaction @relation(fields: [transactionId], references: [id])
 
   @@map(name: "bids")
 }
 
 model Item {
-  id            BigInt    @id @default(autoincrement())
-  sellerId      BigInt    @map(name: "seller_id")
-  name          String    @db.VarChar(255)
-  description   String?   @db.Text
-  startingPrice Int       @map(name: "starting_price") @db.Integer
-  timeWindow    Int       @map(name: "time_window") @db.SmallInt
-  status        String    @default("DRAFT") @db.VarChar(30)
-  publishedAt   DateTime? @map(name: "published_at") @db.Timestamptz()
-  expiresAt     DateTime? @map(name: "expires_at") @db.Timestamptz()
-  soldAt        DateTime? @map(name: "sold_at") @db.Timestamptz()
-  createdAt     DateTime  @default(now()) @map(name: "created_at") @db.Timestamptz()
-  updatedAt     DateTime  @updatedAt @map(name: "updated_at") @db.Timestamptz()
-  seller        User      @relation(fields: [sellerId], references: [id])
-  bids          Bid[]
+  id            BigInt        @id @default(autoincrement())
+  userId        BigInt        @map(name: "seller_id")
+  name          String        @db.VarChar(255)
+  description   String?       @db.Text
+  startingPrice Int           @map(name: "starting_price") @db.Integer
+  timeWindow    Int           @map(name: "time_window") @db.SmallInt
+  status        String        @default("DRAFT") @db.VarChar(30)
+  publishedAt   DateTime?     @map(name: "published_at") @db.Timestamptz()
+  createdAt     DateTime      @default(now()) @map(name: "created_at") @db.Timestamptz()
+  updatedAt     DateTime      @updatedAt @map(name: "updated_at") @db.Timestamptz()
+  owner         User          @relation(fields: [userId], references: [id])
+  listing_item  ListingItem[]
 
   @@map(name: "items")
+}
+
+model ListingItem {
+  id        BigInt    @id @default(autoincrement())
+  itemId    BigInt    @map(name: "item_id")
+  soldTo    BigInt?   @map(name: "sold_to")
+  expiresAt DateTime? @map(name: "expires_at") @db.Timestamptz()
+  soldAt    DateTime? @map(name: "sold_at") @db.Timestamptz()
+  createdAt DateTime  @default(now()) @map(name: "created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map(name: "updated_at") @db.Timestamptz()
+  item      Item      @relation(fields: [itemId], references: [id])
+  bids      Bid[]
+  buyer     User?     @relation(fields: [soldTo], references: [id])
+
+  @@map(name: "listing_item")
 }
 
 model Session {
@@ -82,7 +95,7 @@ model Transaction {
   description String   @db.Text
   createdAt   DateTime @default(now()) @map(name: "created_at") @db.Timestamptz()
   user        User     @relation(fields: [userId], references: [id])
-  Bid         Bid[]
+  bids        Bid[]
 
   @@map(name: "transactions")
 }
@@ -96,9 +109,10 @@ model User {
   updatedAt    DateTime      @updatedAt @map(name: "updated_at") @db.Timestamptz()
   account      Account[]
   session      Session[]
-  items        Item[]
   transactions Transaction[]
   bids         Bid[]
+  items        Item[]
+  listing      ListingItem[]
 
   @@map(name: "users")
 }

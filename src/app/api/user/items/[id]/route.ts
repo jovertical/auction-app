@@ -13,7 +13,7 @@ export async function GET(
     where: { id: parseInt(params.id, 10) },
     select: {
       id: true,
-      sellerId: true,
+      userId: true,
       name: true,
       description: true,
       startingPrice: true,
@@ -27,7 +27,7 @@ export async function GET(
   if (!item) return response.notFound();
 
   // Only the seller can view the item.
-  if (item.sellerId !== BigInt(userId ?? '')) return response.forbidden();
+  if (item.userId !== BigInt(userId ?? '')) return response.forbidden();
 
   return response.json(item);
 }

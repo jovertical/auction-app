@@ -15,7 +15,7 @@ const statuses = {
 async function getUserItems(userId: number) {
   const items = await db.item.findMany({
     where: {
-      sellerId: userId,
+      userId,
     },
   });
 

@@ -5,23 +5,46 @@ import * as response from '@/utils/http/response';
 export async function GET() {
   const user = await getUser();
 
-  const items = await db.item.findMany({
+  const items = await db.listingItem.findMany({
     where: {
-      status: 'PUBLISHED',
+      soldAt: null,
 
       expiresAt: {
         gt: new Date(),
       },
 
-      sellerId: {
-        not: user?.id,
+      item: {
+        userId: {
+          not: user?.id,
+        },
       },
     },
 
-    include: {
-      seller: {
+    select: {
+      id: true,
+      itemId: true,
+      expiresAt: true,
+      createdAt: true,
+      updatedAt: true,
+
+      item: {
         select: {
+          id: true,
           name: true,
+          description: true,
+          startingPrice: true,
+          timeWindow: true,
+          status: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+
+          owner: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
 

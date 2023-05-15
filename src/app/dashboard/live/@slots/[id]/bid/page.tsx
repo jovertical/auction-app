@@ -14,14 +14,28 @@ import { appChannel } from '@/event/channels/app.channel';
 import * as api from '@/utils/api';
 import { date } from '@/utils/date';
 
-type Item = {
+type ListingItem = {
   id: number;
-  name: string;
-  description: string;
-  startingPrice: number;
-  publishedAt: string | null;
+  itemId: number;
   expiresAt: string | null;
-  seller: { name: string };
+  createdAt: string;
+  updatedAt: string;
+
+  item: {
+    id: number;
+    name: string;
+    description: string;
+    startingPrice: number;
+    publishedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+
+    owner: {
+      id: number;
+      name: string;
+    };
+  };
+
   bids: {
     id: number;
     createdAt: string;
@@ -42,7 +56,7 @@ type FormValues = {
 };
 
 export default function Page({ params }: { params: { id: string } }) {
-  const [item, setItem] = useState<Item | null>(null);
+  const [listingItem, setListingItem] = useState<ListingItem | null>(null);
 
   const router = useRouter();
 
@@ -66,9 +80,12 @@ export default function Page({ params }: { params: { id: string } }) {
   });
 
   const onSubmit = async (values: FormValues) => {
-    if (!item) return;
+    if (!listingItem) return;
 
-    const response = await api.post(`/live/items/${item.id}/bid`, values);
+    const response = await api.post(
+      `/live/items/${listingItem.id}/bid`,
+      values
+    );
 
     // prettier-ignore
     appChannel.emit('notification::displayed', {
@@ -107,19 +124,21 @@ export default function Page({ params }: { params: { id: string } }) {
     async function load() {
       if (!params.id) return;
 
-      if (item) return;
+      if (listingItem) return;
 
-      const newItem = await api.get<Item>(`/live/items/${params.id}`);
+      const newListingItem = await api.get<ListingItem>(
+        `/live/items/${params.id}`
+      );
 
-      if (!newItem.data) return;
+      if (!newListingItem.data) return;
 
-      setItem(newItem.data);
+      setListingItem(newListingItem.data);
     }
 
     load();
-  }, [params, item]);
+  }, [params, listingItem]);
 
-  if (!item) return null;
+  if (!listingItem) return null;
 
   return (
     <Transition.Root show as={Fragment}>
@@ -166,7 +185,10 @@ export default function Page({ params }: { params: { id: string } }) {
                       <div className="mt-2">
                         <p className="text-sm text-gray-300">
                           Make a bid for the item{' '}
-                          <span className="font-semibold">{item.name}</span>.
+                          <span className="font-semibold">
+                            {listingItem.item.name}
+                          </span>
+                          .
                         </p>
                       </div>
                     </div>
@@ -186,9 +208,11 @@ export default function Page({ params }: { params: { id: string } }) {
                     </Form.Group>
                   </div>
 
-                  {item.expiresAt && (
+                  {listingItem.expiresAt && (
                     <div className="flex justify-center py-4 px-6 items-center">
-                      <CountdownTimer date={date(item.expiresAt).toDate()} />
+                      <CountdownTimer
+                        date={date(listingItem.expiresAt).toDate()}
+                      />
                     </div>
                   )}
 

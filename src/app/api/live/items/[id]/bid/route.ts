@@ -9,22 +9,34 @@ import * as response from '@/utils/http/response';
 import { currencyFormat } from '@/utils/number';
 import { validate } from '@/utils/validation';
 
-const findItem = async (id: number) => {
-  const item = await db.item.findUnique({
+const findListingItem = async (id: number) => {
+  const listing = await db.listingItem.findUnique({
     where: { id },
+
     select: {
       id: true,
-      sellerId: true,
-      name: true,
-      description: true,
-      status: true,
-      startingPrice: true,
-      publishedAt: true,
+      itemId: true,
+      createdAt: true,
       expiresAt: true,
 
-      seller: {
+      item: {
         select: {
+          id: true,
           name: true,
+          description: true,
+          startingPrice: true,
+          timeWindow: true,
+          status: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+
+          owner: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
 
@@ -56,7 +68,7 @@ const findItem = async (id: number) => {
     },
   });
 
-  return item;
+  return listing;
 };
 
 export async function POST(
@@ -84,35 +96,35 @@ export async function POST(
     return response.inputError(input.error.formErrors.fieldErrors);
   }
 
-  const itemId = parseInt(params.id, 10);
+  const id = parseInt(params.id, 10);
 
-  const item = await findItem(itemId);
+  const listingItem = await findListingItem(id);
 
-  if (!item) return response.notFound();
+  if (!listingItem) return response.notFound();
 
-  // The seller cannot bid on the item they are selling.
-  if (item.sellerId === BigInt(user.id)) {
+  // The owner cannot bid on the item they are selling.
+  if (listingItem.item.owner.id === BigInt(user.id)) {
     return response.forbidden('You cannot bid on your own listing.');
   }
 
   // Only published items can be bid on.
-  if (item.status !== 'PUBLISHED') {
+  if (listingItem.item.status !== 'PUBLISHED') {
     return response.forbidden(
       'This item is not published yet. Please try again later.'
     );
   }
 
   // Only items that have not expired can be bid on.
-  if (item.expiresAt && item.expiresAt < date().toDate()) {
+  if (listingItem.expiresAt && listingItem.expiresAt < date().toDate()) {
     return response.forbidden('This item has expired.');
   }
 
   // If the item has no bids, the starting price is the minimum bid.
   // Otherwise, the minimum bid is the highest bid + 100 cents.
   // prettier-ignore
-  const minimumPrice = item.bids.length === 0
-      ? item.startingPrice
-      : item.bids.reduce((highest, bid) => Math.max(highest, bid.transaction.amount), 0) + 100;
+  const minimumPrice = listingItem.bids.length === 0
+      ? listingItem.item.startingPrice
+      : listingItem.bids.reduce((highest, bid) => Math.max(highest, bid.transaction.amount), 0) + 100;
 
   // The bid must be at least the minimum price/bid.
   if (minimumPrice > input.data.bid * 100) {
@@ -142,7 +154,7 @@ export async function POST(
     const previousBids = await tx.bid.findMany({
       where: {
         bidderId: user.id,
-        itemId: item.id,
+        listingItemId: listingItem.id,
       },
 
       select: {
@@ -168,7 +180,7 @@ export async function POST(
           userId: user.id,
           amount: previousBidTotal,
           type: 'CREDIT',
-          description: `Refund for previous bids on ${item.name}`,
+          description: `Refund for previous bids on ${listingItem.item.name}`,
         },
       });
     }
@@ -180,14 +192,14 @@ export async function POST(
         userId: user.id,
         amount: input.data.bid * 100,
         type: 'DEBIT',
-        description: `Bid on ${item.name}`,
+        description: `Bid on ${listingItem.item.name}`,
       },
     });
 
     // Finally, we can create the bid.
     const bid = await tx.bid.create({
       data: {
-        itemId: parseInt(params.id, 10),
+        listingItemId: listingItem.id,
         bidderId: user.id,
         transactionId: transaction.id,
       },
@@ -201,12 +213,12 @@ export async function POST(
     return bid;
   });
 
-  const updatedItem = await findItem(itemId);
+  const updatedListingItem = await findListingItem(id);
 
   // Trigger a `bid-posted` event on the `live` channel.
   channels.trigger('live', 'item:bid-posted', {
     bid,
-    item: updatedItem,
+    item: updatedListingItem,
   });
 
   return response.json(bid);

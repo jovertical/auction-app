@@ -11,14 +11,30 @@ import * as api from '@/utils/api';
 import { date } from '@/utils/date';
 import { currencyFormat } from '@/utils/number';
 
-type Item = {
+type ListingItem = {
   id: number;
-  name: string;
-  description: string;
-  startingPrice: number;
-  publishedAt: string | null;
+  itemId: number;
   expiresAt: string | null;
-  seller: { name: string };
+  createdAt: string;
+  updatedAt: string;
+
+  item: {
+    id: number;
+    name: string;
+    description: string;
+    startingPrice: number;
+    timeWindow: number;
+    status: string;
+    publishedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+
+    owner: {
+      id: number;
+      name: string;
+    };
+  };
+
   bids: {
     id: number;
     createdAt: string;
@@ -35,7 +51,7 @@ type Item = {
 };
 
 async function getItems() {
-  const items = await api.get<Item[]>('/live/items');
+  const items = await api.get<ListingItem[]>('/live/items');
 
   return items.error ? [] : items.data;
 }
@@ -43,12 +59,12 @@ async function getItems() {
 export default function Page() {
   const session = useContext(SessionContext);
 
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<ListingItem[]>([]);
 
   const user = useMemo(() => session?.data?.user, [session?.data]);
 
   const shallowUpdateItems = useCallback(
-    (newItem: Item) => {
+    (newItem: ListingItem) => {
       setItems((prevItems) => {
         return prevItems.map((item) => {
           return item.id === newItem.id ? newItem : item;
@@ -108,28 +124,28 @@ export default function Page() {
         role="list"
         className="divide-y divide-white/5 px-4 py-4 sm:px-6 lg:px-8"
       >
-        {items.map((item) => (
-          <li key={item.id.toString()}>
+        {items.map((listingItem) => (
+          <li key={listingItem.id.toString()}>
             <div className="flex items-center justify-between gap-x-6 py-5">
               <div className="min-w-0 w-full sm:w-1/3">
                 <div className="flex items-start gap-x-3">
                   <h2 className="min-w-0 text-sm font-semibold leading-6 text-white">
                     <a href="#" className="flex gap-x-2">
-                      <span className="truncate">{item.name}</span>
+                      <span className="truncate">{listingItem.item.name}</span>
                     </a>
                   </h2>
                 </div>
 
                 <div className="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-                  {item.publishedAt && (
+                  {listingItem.item.publishedAt && (
                     <>
                       <p className="whitespace-nowrap">
                         Posted{' '}
                         <time
                           className="italic"
-                          dateTime={item.publishedAt?.toString()}
+                          dateTime={listingItem.item.publishedAt?.toString()}
                         >
-                          {date(item.publishedAt).fromNow()}
+                          {date(listingItem.item.publishedAt).fromNow()}
                         </time>
                       </p>
 
@@ -144,7 +160,9 @@ export default function Page() {
 
                   <p className="truncate">
                     Being sold by{' '}
-                    <strong className="text-white">{item.seller.name}</strong>
+                    <strong className="text-white">
+                      {listingItem.item.owner.name}
+                    </strong>
                   </p>
                 </div>
               </div>
@@ -155,19 +173,19 @@ export default function Page() {
                     <span className="flex gap-x-2">
                       <span className="whitespace-nowrap">
                         {currencyFormat(
-                          item.bids.length === 0
-                            ? item.startingPrice
-                            : item.bids[0].transaction.amount
+                          listingItem.bids.length === 0
+                            ? listingItem.item.startingPrice
+                            : listingItem.bids[0].transaction.amount
                         )}
                       </span>
 
-                      {item.expiresAt && (
+                      {listingItem.expiresAt && (
                         <>
                           <span className="text-gray-400">/</span>
 
                           <span className="whitespace-nowrap">
                             <CountdownTimer
-                              date={date(item.expiresAt).toDate()}
+                              date={date(listingItem.expiresAt).toDate()}
                             />
                           </span>
                         </>
@@ -177,7 +195,7 @@ export default function Page() {
                 </div>
 
                 <div className="mt-1">
-                  {item.bids.length === 0 ? (
+                  {listingItem.bids.length === 0 ? (
                     <p className="truncate text-sm leading-5 text-gray-500">
                       No bids yet
                     </p>
@@ -186,9 +204,9 @@ export default function Page() {
                       <p className="whitespace-nowrap">
                         Highest bid by{' '}
                         <strong className="text-white">
-                          {item.bids[0].bidder.id === user?.id ?? 0
+                          {listingItem.bids[0].bidder.id === user?.id ?? 0
                             ? 'You'
-                            : item.bids[0].bidder.name}
+                            : listingItem.bids[0].bidder.name}
                         </strong>{' '}
                       </p>
 
@@ -202,7 +220,7 @@ export default function Page() {
                       <p className="whitespace-nowrap">
                         There are{' '}
                         <strong className="text-white">
-                          {item.bids.length}
+                          {listingItem.bids.length}
                         </strong>{' '}
                         bid/s so far
                       </p>
@@ -212,8 +230,9 @@ export default function Page() {
               </div>
 
               <div className="flex flex-none items-center gap-x-4">
-                <ButtonLink href={`/dashboard/live/${item.id}/bid`}>
-                  Place Bid <span className="sr-only">, {item.name}</span>
+                <ButtonLink href={`/dashboard/live/${listingItem.id}/bid`}>
+                  Place Bid{' '}
+                  <span className="sr-only">, {listingItem.item.name}</span>
                 </ButtonLink>
               </div>
             </div>
