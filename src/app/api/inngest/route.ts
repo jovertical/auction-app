@@ -112,6 +112,22 @@ const liveItemExpired = inngest.createFunction(
         return;
       }
 
+      const item = await tx.item.findUnique({
+        where: {
+          id: event.data.listingItem.item.id,
+        },
+
+        select: {
+          id: true,
+          status: true,
+        },
+      });
+
+      if (!item) return;
+
+      // If the item is already `SOLD`, then we don't need to do anything
+      if (item.status === 'SOLD') return;
+
       // Mark the item as `SOLD`
       await tx.item.update({
         where: {
