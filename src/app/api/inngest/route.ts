@@ -48,7 +48,14 @@ const prepareLiveItemExpired = inngest.createFunction(
       name: 'app/live.item.expired',
       data: {
         __date: date().toDate(),
-        listingItem,
+        listingItem: {
+          id: listingItem.id.toString(),
+          item: {
+            id: listingItem.item.id.toString(),
+            userId: listingItem.item.userId.toString(),
+            name: listingItem.item.name,
+          },
+        },
       },
     }));
 
