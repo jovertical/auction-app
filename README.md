@@ -1,4 +1,4 @@
-# Jitera Auctions
+# Auctions App
 
 This is an app that allows users to post items for auction and other users to bid on them.
 
